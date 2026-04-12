@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
+import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
 import { ChartBrush } from '@/components/ChartBrush'
 import { db } from '@/db/schema'
@@ -60,7 +61,7 @@ export function BloodPressurePage({
               <LineChart
                 key={`bp-readings-${range.start}-${range.end}-${rows.length}`}
                 data={series}
-                margin={{ top: 8, right: 12, bottom: 4, left: 8 }}
+                margin={LINE_CHART_MARGIN_WITH_BRUSH}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis

@@ -103,3 +103,15 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Recharts Brush: library paints labels with the same stroke as the frame (too faint). */
+.recharts-brush-texts text {
+  fill: var(--text-h) !important;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Let brush labels that extend past the SVG box show (paired with wider chart margins). */
+.chart-wrap .recharts-responsive-container {
+  overflow: visible;
+}

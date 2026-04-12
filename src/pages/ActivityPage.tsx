@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
+import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
 import { ChartBrush } from '@/components/ChartBrush'
 import { db } from '@/db/schema'
@@ -60,9 +61,10 @@ export function ActivityPage({
       <p className="muted">
         Steps and calories use hourly buckets when the toolbar date range is about a week
         or less; wider ranges use day/week/month buckets. Use the 2d or 7d preset (or any
-        short range) for hourly detail. The grey range bar under each chart only zooms that
+        short range) for hourly detail.         The grey range bar under each chart only zooms that
         chart along time; it does not switch hourly vs daily—that comes from the toolbar
-        range. Daily semantics follow max-per-day for totals elsewhere.
+        range. The two times printed beside that bar are the start and end of the zoomed
+        window. Daily semantics follow max-per-day for totals elsewhere.
       </p>
       {steps.length === 0 && cals.length === 0 && sport.length === 0 ? (
         <p className="muted">No activity data in this range.</p>
@@ -74,7 +76,7 @@ export function ActivityPage({
               <LineChart
                 key={`steps-${chartResetKey}-${stepsData.length}`}
                 data={stepsData}
-                margin={{ top: 8, right: 12, bottom: 4, left: 8 }}
+                margin={LINE_CHART_MARGIN_WITH_BRUSH}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
@@ -110,7 +112,7 @@ export function ActivityPage({
               <LineChart
                 key={`cals-${chartResetKey}-${calsData.length}`}
                 data={calsData}
-                margin={{ top: 8, right: 12, bottom: 4, left: 8 }}
+                margin={LINE_CHART_MARGIN_WITH_BRUSH}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis

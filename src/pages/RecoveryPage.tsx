@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { ChartBrush } from '@/components/ChartBrush'
 import { db } from '@/db/schema'
 import { bucketTimeseries, timeseriesChartGranularity } from '@/metrics/bucketing'
@@ -84,7 +85,10 @@ export function RecoveryPage({
           <div className="chart-wrap">
             <h3>SpO₂ (bucketed)</h3>
             <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={o2.filter((d) => d.count > 0)}>
+              <LineChart
+                data={o2.filter((d) => d.count > 0)}
+                margin={LINE_CHART_MARGIN_WITH_BRUSH}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
                 <YAxis domain={[80, 100]} />
@@ -104,7 +108,10 @@ export function RecoveryPage({
           <div className="chart-wrap">
             <h3>Breathing (bucketed avg)</h3>
             <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={br.filter((d) => d.count > 0)}>
+              <LineChart
+                data={br.filter((d) => d.count > 0)}
+                margin={LINE_CHART_MARGIN_WITH_BRUSH}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
                 <YAxis />
