@@ -178,7 +178,10 @@ export function parseSportCsv(text: string, sourceFile: string): SportSession[] 
 }
 
 export function parseStepCsv(text: string, sourceFile: string): TimeseriesSample[] {
-  const { rows } = parseCsvWithHeaders(text)
+  const { rows } = parseCsvWithHeadersAfterPreamble(text, [
+    'steps',
+    'measurement time',
+  ])
   const out: TimeseriesSample[] = []
   for (const row of rows) {
     const v = getCell(row, 'Steps').trim()
@@ -276,7 +279,10 @@ export function parseBloodOxygenCsv(text: string, sourceFile: string): Timeserie
 }
 
 export function parseBloodPressureCsv(text: string, sourceFile: string): BloodPressureReading[] {
-  const { rows } = parseCsvWithHeaders(text)
+  const { rows } = parseCsvWithHeadersAfterPreamble(text, [
+    'systolic',
+    'measurement time',
+  ])
   const out: BloodPressureReading[] = []
   for (const row of rows) {
     const sys = getCell(row, 'Systolic Pressure (mmHg)', 'Systolic').trim()

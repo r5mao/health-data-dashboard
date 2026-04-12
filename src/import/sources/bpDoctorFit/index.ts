@@ -45,6 +45,11 @@ export function parseBpDoctorFitFile(filename: string, text: string): ImportBund
     base.timeseries = parseStepCsv(text, filename)
     return base
   }
+  /** Before generic `pressure` — filenames like BloodPressure_Data.csv contain "pressure". */
+  if (key.includes('bloodpressure')) {
+    base.bloodPressure = parseBloodPressureCsv(text, filename)
+    return base
+  }
   if (key.includes('pressure')) {
     base.timeseries = parsePressureCsv(text, filename)
     return base
@@ -55,10 +60,6 @@ export function parseBpDoctorFitFile(filename: string, text: string): ImportBund
   }
   if (key.includes('bloodoxygen')) {
     base.timeseries = parseBloodOxygenCsv(text, filename)
-    return base
-  }
-  if (key.includes('bloodpressure')) {
-    base.bloodPressure = parseBloodPressureCsv(text, filename)
     return base
   }
   if (key.includes('breathing')) {

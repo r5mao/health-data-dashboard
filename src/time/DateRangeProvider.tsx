@@ -22,9 +22,15 @@ function clampRange(
   extent: { min: number; max: number } | null,
 ): DateRangeValue {
   if (!extent) return r
+  const start = Math.max(r.start, extent.min)
+  const end = Math.min(r.end, extent.max)
+  if (start <= end) {
+    return { start, end }
+  }
+  // Default window (e.g. last 30 days) may not overlap stored data at all.
   return {
-    start: Math.max(r.start, extent.min),
-    end: Math.min(r.end, extent.max),
+    start: extent.min,
+    end: endOfDay(extent.max).getTime(),
   }
 }
 
