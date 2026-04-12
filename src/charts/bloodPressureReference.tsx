@@ -7,7 +7,7 @@ export const BP_STAGE2_DIASTOLIC = 90
 export const BP_REFERENCE_Y_MAX = 400
 
 /**
- * Soft horizontal bands behind BP lines: 90–140 (diastolic ≥90 zone) and ≥140 (systolic Stage 2).
+ * Soft horizontal bands behind BP lines (blue 90–140 / purple ≥140), matching chart line colors.
  */
 export function BpStage2ReferenceBands() {
   return (

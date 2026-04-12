@@ -84,9 +84,10 @@ export function BloodPressurePage({
         </summary>
         <p className="muted page-details-body">
           Stage 2 hypertension is commonly systolic ≥140 mmHg or diastolic ≥90
-          mmHg. The amber band marks the 90–140 mmHg range on the shared axis
-          (diastolic threshold); the red band marks ≥140 mmHg (systolic
-          threshold). Reference only—not a diagnosis.
+          mmHg. The blue band marks the 90–140 mmHg range on the shared axis
+          (diastolic threshold, same hue as the diastolic line); the purple band
+          marks ≥140 mmHg (systolic threshold, same hue as the systolic line).
+          Reference only—not a diagnosis.
         </p>
       </details>
       {rows.length === 0 ? (
