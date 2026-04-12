@@ -93,7 +93,7 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         />
         <Kpi
           title="Latest SpO₂"
-          value={spo2 ? `${Math.round(spo2.value)}%` : '—'}
+          value={spo2 ? `${Number(spo2.value).toFixed(1)}%` : '—'}
           sub={spo2 ? formatDateTime12(spo2.timestamp) : undefined}
         />
         <Kpi

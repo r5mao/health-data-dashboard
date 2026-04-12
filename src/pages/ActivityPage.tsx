@@ -14,6 +14,7 @@ import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
 import { ChartBrush } from '@/components/ChartBrush'
+import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { db } from '@/db/schema'
 import { bucketTimeseries, timeseriesChartGranularity } from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
@@ -73,8 +74,7 @@ export function ActivityPage({
         <p className="muted">No activity data in this range.</p>
       ) : (
         <>
-          <div className="chart-wrap chart-card">
-            <h3>Steps (bucketed)</h3>
+          <CollapsibleChartCard title="Steps (bucketed)">
             <ResponsiveContainer width="100%" height={340}>
               <LineChart
                 key={`steps-${chartResetKey}-${stepsData.length}`}
@@ -114,9 +114,8 @@ export function ActivityPage({
                 <ChartBrush onChange={stepsBrush.onBrushChange} />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-          <div className="chart-wrap chart-card">
-            <h3>Calories (bucketed avg)</h3>
+          </CollapsibleChartCard>
+          <CollapsibleChartCard title="Calories (bucketed avg)">
             <ResponsiveContainer width="100%" height={320}>
               <LineChart
                 key={`cals-${chartResetKey}-${calsData.length}`}
@@ -156,9 +155,8 @@ export function ActivityPage({
                 <ChartBrush onChange={calsBrush.onBrushChange} />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-          <div className="table-wrap table-card">
-            <h3>Sport sessions</h3>
+          </CollapsibleChartCard>
+          <CollapsibleChartCard title="Sport sessions" variant="table" defaultCollapsed>
             {sport.length === 0 ? (
               <p className="muted">No sport sessions in range.</p>
             ) : (
@@ -187,7 +185,7 @@ export function ActivityPage({
                 </tbody>
               </table>
             )}
-          </div>
+          </CollapsibleChartCard>
         </>
       )}
     </div>

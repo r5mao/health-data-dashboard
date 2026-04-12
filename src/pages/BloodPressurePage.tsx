@@ -14,9 +14,30 @@ import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
 import { ChartBrush } from '@/components/ChartBrush'
+import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { db } from '@/db/schema'
 import { bucketBloodPressureDaily } from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
+
+/** Recharts defaults sort labels A–Z, which puts Diastolic above Systolic. */
+function bpSeriesSortKey(dataKey: unknown): number {
+  const k = String(dataKey ?? '')
+  if (k === 'sys' || k === 'sysAvg') return 0
+  if (k === 'dia' || k === 'diaAvg') return 1
+  return 2
+}
+
+function BloodPressureLegend() {
+  return (
+    <Legend
+      verticalAlign="bottom"
+      align="center"
+      layout="vertical"
+      wrapperStyle={{ paddingTop: 6 }}
+      itemSorter={(item) => bpSeriesSortKey(item.dataKey)}
+    />
+  )
+}
 
 export function BloodPressurePage({
   dataRevision,
@@ -42,6 +63,11 @@ export function BloodPressurePage({
   const bpBrushKey = `${range.start}-${range.end}-${rows.length}-${dataRevision}`
   const { visibleSpanMs, onBrushChange } = useBrushTimeSpan(series, bpBrushKey)
 
+  const bpChartMargin = {
+    ...LINE_CHART_MARGIN_WITH_BRUSH,
+    bottom: 56,
+  } as const
+
   return (
     <div className="page">
       <h2>Blood pressure</h2>
@@ -55,13 +81,12 @@ export function BloodPressurePage({
         </p>
       ) : (
         <>
-          <div className="chart-wrap chart-card">
-            <h3>Readings</h3>
+          <CollapsibleChartCard title="Readings">
             <ResponsiveContainer width="100%" height={380}>
               <LineChart
                 key={`bp-readings-${range.start}-${range.end}-${rows.length}`}
                 data={series}
-                margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                margin={bpChartMargin}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
@@ -81,12 +106,13 @@ export function BloodPressurePage({
                       ? ['—', '']
                       : [`${Math.round(Number(value))} mmHg`, '']
                   }
+                  itemSorter={(item) => bpSeriesSortKey(item.dataKey)}
                 />
-                <Legend />
+                <BloodPressureLegend />
                 <Line
                   type="monotone"
                   dataKey="sys"
-                  name=""
+                  name="Systolic"
                   stroke="var(--chart-sys)"
                   dot={{ r: 3 }}
                   isAnimationActive={false}
@@ -94,7 +120,7 @@ export function BloodPressurePage({
                 <Line
                   type="monotone"
                   dataKey="dia"
-                  name=""
+                  name="Diastolic"
                   stroke="var(--chart-dia)"
                   dot={{ r: 3 }}
                   isAnimationActive={false}
@@ -102,11 +128,13 @@ export function BloodPressurePage({
                 <ChartBrush onChange={onBrushChange} />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-          <div className="chart-wrap chart-card">
-            <h3>Daily averages</h3>
+          </CollapsibleChartCard>
+          <CollapsibleChartCard title="Daily averages">
             <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={daily.filter((d) => d.n > 0)}>
+              <LineChart
+                data={daily.filter((d) => d.n > 0)}
+                margin={{ top: 8, right: 16, bottom: 48, left: 16 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
                 <YAxis domain={['auto', 'auto']} />
@@ -117,25 +145,26 @@ export function BloodPressurePage({
                       ? ['—', '']
                       : [`${Number(value).toFixed(1)} mmHg`, '']
                   }
+                  itemSorter={(item) => bpSeriesSortKey(item.dataKey)}
                 />
-                <Legend />
+                <BloodPressureLegend />
                 <Line
                   type="monotone"
                   dataKey="sysAvg"
-                  name=""
+                  name="Systolic"
                   stroke="var(--chart-sys)"
                   dot={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="diaAvg"
-                  name=""
+                  name="Diastolic"
                   stroke="var(--chart-dia)"
                   dot={false}
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </CollapsibleChartCard>
         </>
       )}
     </div>

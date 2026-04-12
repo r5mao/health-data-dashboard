@@ -12,6 +12,7 @@ import {
 } from 'recharts'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { ChartBrush } from '@/components/ChartBrush'
+import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { SleepStageStackChart } from '@/components/SleepStageStackChart'
 import { SleepTimelineChart } from '@/components/SleepTimelineChart'
 import { db } from '@/db/schema'
@@ -72,8 +73,7 @@ export function RecoveryPage({
               />
             </>
           ) : null}
-          <div className="table-wrap table-card">
-            <h3>Sleep sessions</h3>
+          <CollapsibleChartCard title="Sleep sessions" variant="table" defaultCollapsed>
             {sleep.length === 0 ? (
               <p className="muted">No sleep in range.</p>
             ) : (
@@ -102,9 +102,8 @@ export function RecoveryPage({
                 </tbody>
               </table>
             )}
-          </div>
-          <div className="chart-wrap chart-card">
-            <h3>SpO₂ (bucketed)</h3>
+          </CollapsibleChartCard>
+          <CollapsibleChartCard title="SpO₂ (bucketed)">
             <ResponsiveContainer width="100%" height={320}>
               <LineChart
                 data={o2.filter((d) => d.count > 0)}
@@ -112,8 +111,18 @@ export function RecoveryPage({
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
-                <YAxis domain={[80, 100]} />
-                <Tooltip separator="" />
+                <YAxis
+                  domain={[80, 100]}
+                  tickFormatter={(v) => Number(v).toFixed(1)}
+                />
+                <Tooltip
+                  separator=""
+                  formatter={(value) =>
+                    value == null
+                      ? ['—', '']
+                      : [`${Number(value).toFixed(1)}%`, '']
+                  }
+                />
                 <Legend />
                 <Line
                   type="monotone"
@@ -125,9 +134,8 @@ export function RecoveryPage({
                 <ChartBrush />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-          <div className="chart-wrap chart-card">
-            <h3>Breathing (bucketed avg)</h3>
+          </CollapsibleChartCard>
+          <CollapsibleChartCard title="Breathing (bucketed avg)">
             <ResponsiveContainer width="100%" height={320}>
               <LineChart
                 data={br.filter((d) => d.count > 0)}
@@ -155,7 +163,7 @@ export function RecoveryPage({
                 <ChartBrush />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </CollapsibleChartCard>
         </>
       )}
     </div>

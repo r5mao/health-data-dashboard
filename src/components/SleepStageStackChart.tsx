@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { formatMinutesAsHhMm, toSleepStackRows } from '@/metrics/sleepChartData'
 import type { SleepSession } from '@/types/canonical'
 
@@ -35,8 +36,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
   const bottom = labelCount > 8 ? 88 : labelCount > 4 ? 64 : 48
 
   return (
-    <div className="chart-wrap chart-card">
-      <h3>Sleep stage time (per session)</h3>
+    <CollapsibleChartCard title="Sleep stage time (per session)">
       <ResponsiveContainer width="100%" height={340}>
         <BarChart
           key={chartResetKey}
@@ -98,6 +98,6 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
       <p className="muted" style={{ marginTop: 8, fontSize: 14 }}>
         Stages show total time per session, not order during the night.
       </p>
-    </div>
+    </CollapsibleChartCard>
   )
 }

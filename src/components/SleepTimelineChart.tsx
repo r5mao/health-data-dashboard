@@ -12,6 +12,7 @@ import {
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { formatDateTime12 } from '@/time/formatDateTime12'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
+import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { toSleepTimelineRows, type SleepTimelineRow } from '@/metrics/sleepChartData'
 import type { SleepSession } from '@/types/canonical'
 
@@ -36,8 +37,7 @@ export function SleepTimelineChart({
   if (n === 0) return null
 
   return (
-    <div className="chart-wrap chart-card">
-      <h3>Sleep windows</h3>
+    <CollapsibleChartCard title="Sleep windows" defaultCollapsed>
       <ResponsiveContainer width="100%" height={chartHeight}>
         <ScatterChart
           key={chartResetKey}
@@ -115,6 +115,6 @@ export function SleepTimelineChart({
           />
         </ScatterChart>
       </ResponsiveContainer>
-    </div>
+    </CollapsibleChartCard>
   )
 }
