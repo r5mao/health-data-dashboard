@@ -29,24 +29,30 @@
   align-items: center;
 }
 
-.theme-btn {
+.theme-select-label {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.theme-select {
   font: inherit;
   font-size: 0.85rem;
-  padding: 0.35rem 0.55rem;
+  padding: 0.35rem 2rem 0.35rem 0.5rem;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text-h);
   cursor: pointer;
+  min-width: 10.5rem;
 }
 
-.theme-btn:hover {
-  background: var(--code-bg);
-}
-
-.theme-btn.active {
+.theme-select:hover {
   border-color: var(--accent-border);
-  background: var(--accent-bg);
+}
+
+.theme-select:focus {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 1px;
 }
 
 .brand h1 {

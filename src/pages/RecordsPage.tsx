@@ -11,7 +11,7 @@ export function RecordsPage({ dataRevision }: { dataRevision: number }) {
 
   return (
     <div className="page">
-      <h2>Import records</h2>
+      <h2>Import</h2>
       <p className="muted">
         Row counts per source file. Preamble lines with personal identifiers are not
         stored.

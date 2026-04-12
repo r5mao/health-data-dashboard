@@ -10,7 +10,7 @@ import { RecoveryPage } from '@/pages/RecoveryPage'
 import { RecordsPage } from '@/pages/RecordsPage'
 import './App.css'
 
-type Tab = 'overview' | 'bp' | 'activity' | 'recovery' | 'records'
+type Tab = 'overview' | 'bp' | 'activity' | 'recovery' | 'import'
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('overview')
@@ -37,7 +37,7 @@ export default function App() {
           <TabButton id="bp" current={tab} setTab={setTab} label="Blood pressure" />
           <TabButton id="activity" current={tab} setTab={setTab} label="Activity" />
           <TabButton id="recovery" current={tab} setTab={setTab} label="Recovery" />
-          <TabButton id="records" current={tab} setTab={setTab} label="Records" />
+          <TabButton id="import" current={tab} setTab={setTab} label="Import" />
         </nav>
 
         <div className="toolbar">
@@ -49,7 +49,7 @@ export default function App() {
           {tab === 'bp' && <BloodPressurePage dataRevision={dataRevision} />}
           {tab === 'activity' && <ActivityPage dataRevision={dataRevision} />}
           {tab === 'recovery' && <RecoveryPage dataRevision={dataRevision} />}
-          {tab === 'records' && <RecordsPage dataRevision={dataRevision} />}
+          {tab === 'import' && <RecordsPage dataRevision={dataRevision} />}
         </main>
       </div>
     </DateRangeProvider>
