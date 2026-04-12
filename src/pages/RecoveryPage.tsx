@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   CartesianGrid,
   Legend,
@@ -12,6 +12,8 @@ import {
 } from 'recharts'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { ChartBrush } from '@/components/ChartBrush'
+import { SleepStageStackChart } from '@/components/SleepStageStackChart'
+import { SleepTimelineChart } from '@/components/SleepTimelineChart'
 import { db } from '@/db/schema'
 import { bucketTimeseries, timeseriesChartGranularity } from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
@@ -40,6 +42,11 @@ export function RecoveryPage({
   const o2 = bucketTimeseries(ts, range.start, range.end, gran, 'oxygen')
   const br = bucketTimeseries(ts, range.start, range.end, gran, 'breathing')
 
+  const sleepChartResetKey = useMemo(
+    () => `${range.start}-${range.end}-${dataRevision}-${sleep.length}`,
+    [range.start, range.end, dataRevision, sleep.length],
+  )
+
   return (
     <div className="page">
       <h2>Recovery</h2>
@@ -51,6 +58,20 @@ export function RecoveryPage({
         <p className="muted">No recovery metrics in this range.</p>
       ) : (
         <>
+          {sleep.length > 0 ? (
+            <>
+              <SleepTimelineChart
+                sessions={sleep}
+                rangeStart={range.start}
+                rangeEnd={range.end}
+                chartResetKey={sleepChartResetKey}
+              />
+              <SleepStageStackChart
+                sessions={sleep}
+                chartResetKey={sleepChartResetKey}
+              />
+            </>
+          ) : null}
           <div className="table-wrap table-card">
             <h3>Sleep sessions</h3>
             {sleep.length === 0 ? (

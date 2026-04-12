@@ -28,6 +28,10 @@
   --chart-cal: #d97706;
   --chart-o2: #0ea5e9;
   --chart-br: #db2777;
+  --chart-sleep-window: rgba(124, 58, 237, 0.38);
+  --chart-sleep-deep: #6d28d9;
+  --chart-sleep-light: #0ea5e9;
+  --chart-sleep-awake: #ea580c;
 
   --sans: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -65,6 +69,10 @@
   --shadow-sm:
     rgba(0, 0, 0, 0.35) 0 4px 14px -4px,
     rgba(0, 0, 0, 0.2) 0 2px 6px -2px;
+  --chart-sleep-window: rgba(167, 139, 250, 0.35);
+  --chart-sleep-deep: #a78bfa;
+  --chart-sleep-light: #38bdf8;
+  --chart-sleep-awake: #fb923c;
 }
 
 :root[data-theme='dark'] #social .button-icon {
