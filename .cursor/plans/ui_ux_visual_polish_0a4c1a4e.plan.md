@@ -6,7 +6,7 @@ todos:
     content: Expand CSS variables in index.css (surfaces, radii, shadows, optional fonts link in index.html)
     status: pending
   - id: shell
-    content: Restyle header, segmented tabs, toolbar/date chips in App.css
+    content: Restyle header, segmented tabs (with BP/activity/recovery symbols), toolbar/date chips in App.css
     status: pending
   - id: surfaces
     content: KPI + chart-card + table container; Recharts axis/grid tick colors in index.css
@@ -54,6 +54,7 @@ flowchart LR
 
 - **Header**: Tighter vertical rhythm; optional thin bottom border or soft background strip so brand + actions feel like a bar, not floating text.
 - **Tabs**: Move from plain bordered buttons to a **segmented control** style (shared rounded track, active pill with `--accent-bg` and clear contrast), with `transition` on background/border.
+- **Tab symbols (blood pressure, activity, recovery)**: Add a small **leading symbol** next to the label for those three tabs—implemented as **inline SVG** (no new npm dependency, consistent on Windows/macOS/Linux). Suggested pairing: heart + pulse (BP), walking/person-activity (activity), moon or bed (recovery). Icons are `aria-hidden`; the button text remains the full name for screen readers. Optionally add matching symbols for **Overview** (e.g. layout grid or chart) and **Import** (upload) so the row feels balanced—optional during implementation.
 - **Toolbar** ([`DateRangeControl`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\components\DateRangeControl.tsx)): Place inside a raised surface (padding + `--surface-raised` + radius); style **breadcrumb** as smaller uppercase or tabular tracking if it stays readable; **preset buttons** as compact chips (active state when matching current preset would require a small prop from context—only add if low-cost; otherwise keep visual-only hover polish).
 
 ### 3. Content surfaces: KPIs, charts, tables (`App.css`; optional class wrappers in pages)
@@ -75,14 +76,15 @@ flowchart LR
 ## Out of scope (unless you want them later)
 
 - Adding Tailwind, Radix, or shadcn (large dependency and refactor for this codebase size).
-- Illustrations, icons library, or redesigning data visualization semantics (same charts, nicer frame).
+- **Icon npm packages** (Lucide, etc.); tab symbols use **inline SVG** or Unicode only.
+- Full illustration work or redesigning data visualization semantics (same charts, nicer frame).
 
 ## Files likely touched
 
 | Area | Files |
 |------|--------|
 | Tokens + Recharts globals | [`src/index.css`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\index.css) |
-| Layout, components, tables | [`src/App.css`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\App.css) |
+| Layout, tab icons, components, tables | [`src/App.tsx`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\App.tsx) (tab content), [`src/App.css`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\App.css) (`.tab-btn` icon spacing) |
 | Fonts | [`index.html`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\index.html) |
 | Chart wrappers | [`src/pages/BloodPressurePage.tsx`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\pages\BloodPressurePage.tsx), [`ActivityPage.tsx`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\pages\ActivityPage.tsx), [`RecoveryPage.tsx`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\pages\RecoveryPage.tsx), [`Overview.tsx`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\pages\Overview.tsx) as needed |
 | Tables | [`src/pages/RecordsPage.tsx`](c:\Users\ryanm\OneDrive\Documents\projects\health-data-dashboard\src\pages\RecordsPage.tsx) (class on wrap only) |
