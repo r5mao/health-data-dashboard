@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   parseBloodPressureCsv,
+  parseBreathingCsv,
   parseHeartRateCsv,
   parseStepCsv,
   parseWeightCsv,
@@ -66,6 +67,29 @@ Steps,Measurement Time,Data Source,Measuring Device
     const rows = parseStepCsv(csv, 'Step_Data.csv')
     expect(rows).toHaveLength(1)
     expect(rows[0].value).toBe(100)
+  })
+})
+
+describe('parseBreathingCsv', () => {
+  it('skips user preamble before header row (matches real Breathing_Data.csv)', () => {
+    const csv = `User Name,
+User Email,test@example.com
+Breathing (times/minute),Measurement Time,Data Source,Measuring Device
+16,2026-04-10 12:00:00,Non-User Input,BP DOCTOR FIT Y007
+`
+    const rows = parseBreathingCsv(csv, 'Breathing_Data.csv')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].metricType).toBe('breathing')
+    expect(rows[0].value).toBe(16)
+  })
+
+  it('parses without preamble', () => {
+    const csv = `Breathing (times/minute),Measurement Time,Data Source,Measuring Device
+18,2026-04-10 12:00:00,Non-User Input,BP DOCTOR FIT Y007
+`
+    const rows = parseBreathingCsv(csv, 'Breathing_Data.csv')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].value).toBe(18)
   })
 })
 

@@ -305,7 +305,10 @@ export function parseBloodPressureCsv(text: string, sourceFile: string): BloodPr
 }
 
 export function parseBreathingCsv(text: string, sourceFile: string): TimeseriesSample[] {
-  const { rows } = parseCsvWithHeaders(text)
+  const { rows } = parseCsvWithHeadersAfterPreamble(text, [
+    'breathing',
+    'measurement time',
+  ])
   const out: TimeseriesSample[] = []
   for (const row of rows) {
     const v = getCell(row, 'Breathing (times/minute)', 'Breathing').trim()

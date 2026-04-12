@@ -31,39 +31,41 @@ export function ImportPanel({ onImported }: Props) {
   }
 
   return (
-    <div className="import-panel">
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".csv"
-        multiple
-        className="file-input"
-        onChange={onChange}
-      />
-      <button
-        type="button"
-        className="btn secondary"
-        onClick={() => inputRef.current?.click()}
-      >
-        Import CSV
-      </button>
-      <button
-        type="button"
-        className="btn danger"
-        onClick={async () => {
-          if (
-            confirm(
-              'Delete all imported data in this browser? This cannot be undone.',
-            )
-          ) {
-            await clearAllData()
-            onImported()
-            setStatus('All data cleared.')
-          }
-        }}
-      >
-        Clear all
-      </button>
+    <div className="import-shell">
+      <div className="import-panel">
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".csv"
+          multiple
+          className="file-input"
+          onChange={onChange}
+        />
+        <button
+          type="button"
+          className="btn secondary"
+          onClick={() => inputRef.current?.click()}
+        >
+          Import CSV
+        </button>
+        <button
+          type="button"
+          className="btn danger"
+          onClick={async () => {
+            if (
+              confirm(
+                'Delete all imported data in this browser? This cannot be undone.',
+              )
+            ) {
+              await clearAllData()
+              onImported()
+              setStatus('All data cleared.')
+            }
+          }}
+        >
+          Clear all
+        </button>
+      </div>
       {status && <pre className="import-status">{status}</pre>}
     </div>
   )
