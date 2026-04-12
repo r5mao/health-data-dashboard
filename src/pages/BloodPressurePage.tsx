@@ -10,6 +10,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
+import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
+import { ChartBrush } from '@/components/ChartBrush'
 import { db } from '@/db/schema'
 import { bucketBloodPressureDaily } from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
@@ -35,11 +38,15 @@ export function BloodPressurePage({
     dia: r.diastolic,
   }))
 
+  const bpBrushKey = `${range.start}-${range.end}-${rows.length}-${dataRevision}`
+  const { visibleSpanMs, onBrushChange } = useBrushTimeSpan(series, bpBrushKey)
+
   return (
     <div className="page">
       <h2>Blood pressure</h2>
       <p className="muted">
-        Individual readings and daily averages in the selected range.
+        Individual readings and daily averages in the selected range. Use the
+        range bar under the readings chart to zoom into part of a day.
       </p>
       {rows.length === 0 ? (
         <p className="muted">
@@ -49,14 +56,20 @@ export function BloodPressurePage({
         <>
           <div className="chart-wrap">
             <h3>Readings</h3>
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={series} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+            <ResponsiveContainer width="100%" height={380}>
+              <LineChart
+                key={`bp-readings-${range.start}-${range.end}-${rows.length}`}
+                data={series}
+                margin={{ top: 8, right: 12, bottom: 4, left: 8 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   type="number"
                   dataKey="t"
                   domain={['dataMin', 'dataMax']}
-                  tickFormatter={(v) => format(v, 'MMM d')}
+                  tickFormatter={(v) =>
+                    formatTimeAxisTick(v as number, visibleSpanMs)
+                  }
                 />
                 <YAxis domain={['auto', 'auto']} unit=" mmHg" />
                 <Tooltip
@@ -79,6 +92,7 @@ export function BloodPressurePage({
                   dot={{ r: 3 }}
                   isAnimationActive={false}
                 />
+                <ChartBrush onChange={onBrushChange} />
               </LineChart>
             </ResponsiveContainer>
           </div>

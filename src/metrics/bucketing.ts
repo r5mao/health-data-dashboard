@@ -4,6 +4,16 @@ import type { MetricType } from '@/types/metric'
 
 export type Granularity = 'hour' | 'day' | 'week' | 'month'
 
+/** Hourly buckets when selected range is at most this many days (see `timeseriesChartGranularity`). */
+export const HOURLY_BUCKET_MAX_SPAN_DAYS = 7
+
+export function timeseriesChartGranularity(spanDays: number): Granularity {
+  if (spanDays <= HOURLY_BUCKET_MAX_SPAN_DAYS) return 'hour'
+  if (spanDays <= 60) return 'day'
+  if (spanDays <= 400) return 'week'
+  return 'month'
+}
+
 export type BucketPoint = {
   label: string
   t: number

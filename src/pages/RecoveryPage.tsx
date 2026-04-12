@@ -10,8 +10,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { ChartBrush } from '@/components/ChartBrush'
 import { db } from '@/db/schema'
-import { bucketTimeseries } from '@/metrics/bucketing'
+import { bucketTimeseries, timeseriesChartGranularity } from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
 
 export function RecoveryPage({
@@ -33,8 +34,7 @@ export function RecoveryPage({
   }, [range.start, range.end, dataRevision])
 
   const spanDays = (range.end - range.start) / 86400000
-  const gran =
-    spanDays <= 2 ? 'hour' : spanDays <= 60 ? 'day' : spanDays <= 400 ? 'week' : 'month'
+  const gran = timeseriesChartGranularity(spanDays)
 
   const o2 = bucketTimeseries(ts, range.start, range.end, gran, 'oxygen')
   const br = bucketTimeseries(ts, range.start, range.end, gran, 'breathing')
@@ -42,7 +42,10 @@ export function RecoveryPage({
   return (
     <div className="page">
       <h2>Recovery</h2>
-      <p className="muted">Sleep sessions, SpO₂, and breathing in the selected range.</p>
+      <p className="muted">
+        Sleep sessions, SpO₂, and breathing in the selected range. Charts use hourly buckets
+        when the toolbar range is about a week or less (same as Activity).
+      </p>
       {sleep.length === 0 && o2.length === 0 && br.length === 0 ? (
         <p className="muted">No recovery metrics in this range.</p>
       ) : (
@@ -80,7 +83,7 @@ export function RecoveryPage({
           </div>
           <div className="chart-wrap">
             <h3>SpO₂ (bucketed)</h3>
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={320}>
               <LineChart data={o2.filter((d) => d.count > 0)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
@@ -94,12 +97,13 @@ export function RecoveryPage({
                   stroke="var(--chart-o2)"
                   dot={false}
                 />
+                <ChartBrush />
               </LineChart>
             </ResponsiveContainer>
           </div>
           <div className="chart-wrap">
             <h3>Breathing (bucketed avg)</h3>
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={320}>
               <LineChart data={br.filter((d) => d.count > 0)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
@@ -113,6 +117,7 @@ export function RecoveryPage({
                   stroke="var(--chart-br)"
                   dot={false}
                 />
+                <ChartBrush />
               </LineChart>
             </ResponsiveContainer>
           </div>

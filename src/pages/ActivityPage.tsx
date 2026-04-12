@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   CartesianGrid,
   Legend,
@@ -10,8 +10,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
+import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
+import { ChartBrush } from '@/components/ChartBrush'
 import { db } from '@/db/schema'
-import { bucketTimeseries } from '@/metrics/bucketing'
+import { bucketTimeseries, timeseriesChartGranularity } from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
 
 export function ActivityPage({
@@ -32,19 +35,34 @@ export function ActivityPage({
     )
   }, [range.start, range.end, dataRevision])
 
-  const spanDays = (range.end - range.start) / (86400000)
-  const gran =
-    spanDays <= 2 ? 'hour' : spanDays <= 60 ? 'day' : spanDays <= 400 ? 'week' : 'month'
+  const spanDays = (range.end - range.start) / 86400000
+  const gran = timeseriesChartGranularity(spanDays)
 
-  const steps = bucketTimeseries(ts, range.start, range.end, gran, 'steps')
-  const cals = bucketTimeseries(ts, range.start, range.end, gran, 'calories')
+  const steps = useMemo(
+    () => bucketTimeseries(ts, range.start, range.end, gran, 'steps'),
+    [ts, range.start, range.end, gran],
+  )
+  const cals = useMemo(
+    () => bucketTimeseries(ts, range.start, range.end, gran, 'calories'),
+    [ts, range.start, range.end, gran],
+  )
+
+  const stepsData = useMemo(() => steps.filter((d) => d.count > 0), [steps])
+  const calsData = useMemo(() => cals.filter((d) => d.count > 0), [cals])
+
+  const chartResetKey = `${range.start}-${range.end}-${dataRevision}-${gran}-${ts.length}`
+  const stepsBrush = useBrushTimeSpan(stepsData, chartResetKey)
+  const calsBrush = useBrushTimeSpan(calsData, chartResetKey)
 
   return (
     <div className="page">
       <h2>Activity</h2>
       <p className="muted">
-        Steps and calories are bucketed for readability. Steps use raw samples in range;
-        daily semantics follow max-per-day for totals elsewhere.
+        Steps and calories use hourly buckets when the toolbar date range is about a week
+        or less; wider ranges use day/week/month buckets. Use the 2d or 7d preset (or any
+        short range) for hourly detail. The grey range bar under each chart only zooms that
+        chart along time; it does not switch hourly vs daily—that comes from the toolbar
+        range. Daily semantics follow max-per-day for totals elsewhere.
       </p>
       {steps.length === 0 && cals.length === 0 && sport.length === 0 ? (
         <p className="muted">No activity data in this range.</p>
@@ -52,12 +70,28 @@ export function ActivityPage({
         <>
           <div className="chart-wrap">
             <h3>Steps (bucketed)</h3>
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={steps.filter((d) => d.count > 0)}>
+            <ResponsiveContainer width="100%" height={340}>
+              <LineChart
+                key={`steps-${chartResetKey}-${stepsData.length}`}
+                data={stepsData}
+                margin={{ top: 8, right: 12, bottom: 4, left: 8 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="label" />
+                <XAxis
+                  type="number"
+                  dataKey="t"
+                  domain={['dataMin', 'dataMax']}
+                  tickFormatter={(v) =>
+                    formatTimeAxisTick(v as number, stepsBrush.visibleSpanMs)
+                  }
+                />
                 <YAxis />
-                <Tooltip />
+                <Tooltip
+                  labelFormatter={(_, payload) => {
+                    const t = payload?.[0]?.payload?.t as number | undefined
+                    return t != null ? format(t, 'PPpp') : ''
+                  }}
+                />
                 <Legend />
                 <Line
                   type="monotone"
@@ -66,17 +100,34 @@ export function ActivityPage({
                   stroke="var(--chart-steps)"
                   dot={false}
                 />
+                <ChartBrush onChange={stepsBrush.onBrushChange} />
               </LineChart>
             </ResponsiveContainer>
           </div>
           <div className="chart-wrap">
             <h3>Calories (bucketed avg)</h3>
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={cals.filter((d) => d.count > 0)}>
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart
+                key={`cals-${chartResetKey}-${calsData.length}`}
+                data={calsData}
+                margin={{ top: 8, right: 12, bottom: 4, left: 8 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="label" />
+                <XAxis
+                  type="number"
+                  dataKey="t"
+                  domain={['dataMin', 'dataMax']}
+                  tickFormatter={(v) =>
+                    formatTimeAxisTick(v as number, calsBrush.visibleSpanMs)
+                  }
+                />
                 <YAxis />
-                <Tooltip />
+                <Tooltip
+                  labelFormatter={(_, payload) => {
+                    const t = payload?.[0]?.payload?.t as number | undefined
+                    return t != null ? format(t, 'PPpp') : ''
+                  }}
+                />
                 <Legend />
                 <Line
                   type="monotone"
@@ -85,6 +136,7 @@ export function ActivityPage({
                   stroke="var(--chart-cal)"
                   dot={false}
                 />
+                <ChartBrush onChange={calsBrush.onBrushChange} />
               </LineChart>
             </ResponsiveContainer>
           </div>

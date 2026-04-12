@@ -88,6 +88,12 @@ export function DateRangeProvider({
       let next: DateRangeValue
 
       switch (id) {
+        case '2d':
+          next = {
+            start: startOfDay(subDays(end, 1)).getTime(),
+            end,
+          }
+          break
         case '7d':
           next = {
             start: startOfDay(subDays(end, 6)).getTime(),

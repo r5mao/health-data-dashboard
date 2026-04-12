@@ -1,6 +1,7 @@
 export type DateRangeValue = { start: number; end: number }
 
 export type PresetId =
+  | '2d'
   | '7d'
   | '30d'
   | '90d'
