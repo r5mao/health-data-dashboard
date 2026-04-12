@@ -14,6 +14,41 @@
   margin-bottom: 1rem;
 }
 
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.theme-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.theme-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.theme-btn:hover {
+  background: var(--code-bg);
+}
+
+.theme-btn.active {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
 .brand h1 {
   font-size: 1.75rem;
   letter-spacing: -0.02em;

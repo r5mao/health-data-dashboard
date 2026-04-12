@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { DateRangeProvider } from '@/time/DateRangeProvider'
 import { DateRangeControl } from '@/components/DateRangeControl'
 import { ImportPanel } from '@/components/ImportPanel'
+import { ThemeControl } from '@/components/ThemeControl'
 import { Overview } from '@/pages/Overview'
 import { BloodPressurePage } from '@/pages/BloodPressurePage'
 import { ActivityPage } from '@/pages/ActivityPage'
@@ -23,9 +24,12 @@ export default function App() {
             <h1>Health Dashboard</h1>
             <p className="muted">Local-only. Import CSV exports to view trends.</p>
           </div>
-          <ImportPanel
-            onImported={() => setDataRevision((n) => n + 1)}
-          />
+          <div className="header-actions">
+            <ThemeControl />
+            <ImportPanel
+              onImported={() => setDataRevision((n) => n + 1)}
+            />
+          </div>
         </header>
 
         <nav className="tabs" aria-label="Main">
