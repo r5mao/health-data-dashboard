@@ -16,4 +16,6 @@ export type DateRangeContextValue = {
   applyPreset: (id: PresetId) => void
   refreshExtent: () => Promise<void>
   breadcrumbLabel: string
+  /** Last preset applied from the toolbar; matches default initial window (`30d`). */
+  activePreset: PresetId | null
 }

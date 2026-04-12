@@ -19,32 +19,34 @@ export function RecordsPage({ dataRevision }: { dataRevision: number }) {
       {meta.length === 0 ? (
         <p className="muted">No imports yet.</p>
       ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>File</th>
-              <th>Imported</th>
-              <th>Timeseries</th>
-              <th>BP</th>
-              <th>Sleep</th>
-              <th>Sport</th>
-              <th>Weight</th>
-            </tr>
-          </thead>
-          <tbody>
-            {meta.map((m) => (
-              <tr key={m.sourceFile}>
-                <td>{m.sourceFile}</td>
-                <td>{format(m.importedAt, 'PPpp')}</td>
-                <td>{m.rowCounts.timeseries}</td>
-                <td>{m.rowCounts.bloodPressure}</td>
-                <td>{m.rowCounts.sleep}</td>
-                <td>{m.rowCounts.sport}</td>
-                <td>{m.rowCounts.weight}</td>
+        <div className="table-wrap table-card">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Imported</th>
+                <th>Timeseries</th>
+                <th>BP</th>
+                <th>Sleep</th>
+                <th>Sport</th>
+                <th>Weight</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {meta.map((m) => (
+                <tr key={m.sourceFile}>
+                  <td>{m.sourceFile}</td>
+                  <td>{format(m.importedAt, 'PPpp')}</td>
+                  <td>{m.rowCounts.timeseries}</td>
+                  <td>{m.rowCounts.bloodPressure}</td>
+                  <td>{m.rowCounts.sleep}</td>
+                  <td>{m.rowCounts.sport}</td>
+                  <td>{m.rowCounts.weight}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

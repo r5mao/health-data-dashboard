@@ -1,7 +1,15 @@
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { DateRangeProvider } from '@/time/DateRangeProvider'
 import { DateRangeControl } from '@/components/DateRangeControl'
 import { ImportPanel } from '@/components/ImportPanel'
+import {
+  IconActivity,
+  IconBloodPressure,
+  IconImport,
+  IconOverview,
+  IconRecovery,
+} from '@/components/TabIcons'
 import { ThemeControl } from '@/components/ThemeControl'
 import { Overview } from '@/pages/Overview'
 import { BloodPressurePage } from '@/pages/BloodPressurePage'
@@ -33,15 +41,45 @@ export default function App() {
         </header>
 
         <nav className="tabs" aria-label="Main">
-          <TabButton id="overview" current={tab} setTab={setTab} label="Overview" />
-          <TabButton id="bp" current={tab} setTab={setTab} label="Blood pressure" />
-          <TabButton id="activity" current={tab} setTab={setTab} label="Activity" />
-          <TabButton id="recovery" current={tab} setTab={setTab} label="Recovery" />
-          <TabButton id="import" current={tab} setTab={setTab} label="Import" />
+          <TabButton
+            id="overview"
+            current={tab}
+            setTab={setTab}
+            label="Overview"
+            icon={<IconOverview />}
+          />
+          <TabButton
+            id="bp"
+            current={tab}
+            setTab={setTab}
+            label="Blood pressure"
+            icon={<IconBloodPressure />}
+          />
+          <TabButton
+            id="activity"
+            current={tab}
+            setTab={setTab}
+            label="Activity"
+            icon={<IconActivity />}
+          />
+          <TabButton
+            id="recovery"
+            current={tab}
+            setTab={setTab}
+            label="Recovery"
+            icon={<IconRecovery />}
+          />
+          <TabButton
+            id="import"
+            current={tab}
+            setTab={setTab}
+            label="Import"
+            icon={<IconImport />}
+          />
         </nav>
 
         {tab !== 'import' && (
-          <div className="toolbar">
+          <div className="toolbar toolbar-card">
             <DateRangeControl />
           </div>
         )}
@@ -63,11 +101,13 @@ function TabButton({
   current,
   setTab,
   label,
+  icon,
 }: {
   id: Tab
   current: Tab
   setTab: (t: Tab) => void
   label: string
+  icon: ReactNode
 }) {
   return (
     <button
@@ -75,7 +115,10 @@ function TabButton({
       className={`tab-btn${current === id ? ' active' : ''}`}
       onClick={() => setTab(id)}
     >
-      {label}
+      <span className="tab-icon" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="tab-label">{label}</span>
     </button>
   )
 }

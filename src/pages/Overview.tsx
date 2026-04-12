@@ -97,7 +97,7 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         />
         <Kpi
           title="Latest breathing rate"
-          value={breath ? `${breath.value.toFixed(1)} /min` : '—'}
+          value={breath ? `${breath.value.toFixed(1)} / min` : '—'}
           sub={breath ? format(breath.timestamp, 'PPpp') : undefined}
         />
         <Kpi

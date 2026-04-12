@@ -50,6 +50,7 @@ export function DateRangeProvider({
     const start = startOfDay(subDays(end, 29)).getTime()
     return { start, end }
   })
+  const [activePreset, setActivePreset] = useState<PresetId | null>('30d')
 
   const refreshExtent = useCallback(async () => {
     const e = await getDataTimeExtent()
@@ -141,6 +142,7 @@ export function DateRangeProvider({
           return
       }
 
+      setActivePreset(id)
       setRangeState(clampRange(next, dataExtent))
     },
     [dataExtent],
@@ -165,8 +167,17 @@ export function DateRangeProvider({
       applyPreset,
       refreshExtent,
       breadcrumbLabel,
+      activePreset,
     }),
-    [range, dataExtent, setRange, applyPreset, refreshExtent, breadcrumbLabel],
+    [
+      range,
+      dataExtent,
+      setRange,
+      applyPreset,
+      refreshExtent,
+      breadcrumbLabel,
+      activePreset,
+    ],
   )
 
   return (

@@ -55,7 +55,7 @@ export function BloodPressurePage({
         </p>
       ) : (
         <>
-          <div className="chart-wrap">
+          <div className="chart-wrap chart-card">
             <h3>Readings</h3>
             <ResponsiveContainer width="100%" height={380}>
               <LineChart
@@ -74,13 +74,19 @@ export function BloodPressurePage({
                 />
                 <YAxis domain={['auto', 'auto']} unit=" mmHg" />
                 <Tooltip
+                  separator=""
                   labelFormatter={(v) => format(v as number, 'PPpp')}
+                  formatter={(value) =>
+                    value == null
+                      ? ['—', '']
+                      : [`${Math.round(Number(value))} mmHg`, '']
+                  }
                 />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="sys"
-                  name="Systolic"
+                  name=""
                   stroke="var(--chart-sys)"
                   dot={{ r: 3 }}
                   isAnimationActive={false}
@@ -88,7 +94,7 @@ export function BloodPressurePage({
                 <Line
                   type="monotone"
                   dataKey="dia"
-                  name="Diastolic"
+                  name=""
                   stroke="var(--chart-dia)"
                   dot={{ r: 3 }}
                   isAnimationActive={false}
@@ -97,26 +103,33 @@ export function BloodPressurePage({
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="chart-wrap">
+          <div className="chart-wrap chart-card">
             <h3>Daily averages</h3>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={daily.filter((d) => d.n > 0)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
                 <YAxis domain={['auto', 'auto']} />
-                <Tooltip />
+                <Tooltip
+                  separator=""
+                  formatter={(value) =>
+                    value == null
+                      ? ['—', '']
+                      : [`${Number(value).toFixed(1)} mmHg`, '']
+                  }
+                />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="sysAvg"
-                  name="Systolic avg"
+                  name=""
                   stroke="var(--chart-sys)"
                   dot={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="diaAvg"
-                  name="Diastolic avg"
+                  name=""
                   stroke="var(--chart-dia)"
                   dot={false}
                 />

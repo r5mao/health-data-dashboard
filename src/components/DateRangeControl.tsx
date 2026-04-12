@@ -12,7 +12,7 @@ const presets: { id: PresetId; label: string }[] = [
 ]
 
 export function DateRangeControl() {
-  const { applyPreset, breadcrumbLabel } = useDateRange()
+  const { applyPreset, breadcrumbLabel, activePreset } = useDateRange()
 
   return (
     <div className="date-range-bar">
@@ -22,7 +22,7 @@ export function DateRangeControl() {
           <button
             key={p.id}
             type="button"
-            className="preset-btn"
+            className={`preset-btn${activePreset === p.id ? ' active' : ''}`}
             onClick={() => applyPreset(p.id)}
           >
             {p.label}

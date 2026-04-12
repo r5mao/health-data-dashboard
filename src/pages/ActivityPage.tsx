@@ -73,7 +73,7 @@ export function ActivityPage({
         <p className="muted">No activity data in this range.</p>
       ) : (
         <>
-          <div className="chart-wrap">
+          <div className="chart-wrap chart-card">
             <h3>Steps (bucketed)</h3>
             <ResponsiveContainer width="100%" height={340}>
               <LineChart
@@ -92,16 +92,22 @@ export function ActivityPage({
                 />
                 <YAxis />
                 <Tooltip
+                  separator=""
                   labelFormatter={(_, payload) => {
                     const t = payload?.[0]?.payload?.t as number | undefined
                     return t != null ? format(t, 'PPpp') : ''
                   }}
+                  formatter={(value) =>
+                    value == null
+                      ? ['—', '']
+                      : [`${Math.round(Number(value))}`, '']
+                  }
                 />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="max"
-                  name="Max in bucket"
+                  name=""
                   stroke="var(--chart-steps)"
                   dot={false}
                 />
@@ -109,7 +115,7 @@ export function ActivityPage({
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="chart-wrap">
+          <div className="chart-wrap chart-card">
             <h3>Calories (bucketed avg)</h3>
             <ResponsiveContainer width="100%" height={320}>
               <LineChart
@@ -128,16 +134,22 @@ export function ActivityPage({
                 />
                 <YAxis />
                 <Tooltip
+                  separator=""
                   labelFormatter={(_, payload) => {
                     const t = payload?.[0]?.payload?.t as number | undefined
                     return t != null ? format(t, 'PPpp') : ''
                   }}
+                  formatter={(value) =>
+                    value == null
+                      ? ['—', '']
+                      : [`${Number(value).toFixed(1)}`, '']
+                  }
                 />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="avg"
-                  name="Avg kcal"
+                  name=""
                   stroke="var(--chart-cal)"
                   dot={false}
                 />
@@ -145,7 +157,7 @@ export function ActivityPage({
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="table-wrap">
+          <div className="table-wrap table-card">
             <h3>Sport sessions</h3>
             {sport.length === 0 ? (
               <p className="muted">No sport sessions in range.</p>

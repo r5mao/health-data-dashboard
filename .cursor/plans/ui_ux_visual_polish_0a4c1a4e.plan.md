@@ -4,19 +4,19 @@ overview: Elevate the dashboard’s look by refining design tokens (color, type,
 todos:
   - id: tokens
     content: Expand CSS variables in index.css (surfaces, radii, shadows, optional fonts link in index.html)
-    status: pending
+    status: completed
   - id: shell
     content: Restyle header, segmented tabs (with BP/activity/recovery symbols), toolbar/date chips in App.css
-    status: pending
+    status: completed
   - id: surfaces
     content: KPI + chart-card + table container; Recharts axis/grid tick colors in index.css
-    status: pending
+    status: completed
   - id: buttons
     content: Unify .btn / theme-select / import row alignment and focus states
-    status: pending
+    status: completed
   - id: qa-themes
     content: "Manual pass: light/dark + responsive on all tabs"
-    status: pending
+    status: completed
 isProject: false
 ---
 

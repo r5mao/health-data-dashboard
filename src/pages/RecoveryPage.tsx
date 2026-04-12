@@ -51,7 +51,7 @@ export function RecoveryPage({
         <p className="muted">No recovery metrics in this range.</p>
       ) : (
         <>
-          <div className="table-wrap">
+          <div className="table-wrap table-card">
             <h3>Sleep sessions</h3>
             {sleep.length === 0 ? (
               <p className="muted">No sleep in range.</p>
@@ -82,7 +82,7 @@ export function RecoveryPage({
               </table>
             )}
           </div>
-          <div className="chart-wrap">
+          <div className="chart-wrap chart-card">
             <h3>SpO₂ (bucketed)</h3>
             <ResponsiveContainer width="100%" height={320}>
               <LineChart
@@ -92,12 +92,12 @@ export function RecoveryPage({
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
                 <YAxis domain={[80, 100]} />
-                <Tooltip />
+                <Tooltip separator="" />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="avg"
-                  name="Avg %"
+                  name=""
                   stroke="var(--chart-o2)"
                   dot={false}
                 />
@@ -105,7 +105,7 @@ export function RecoveryPage({
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="chart-wrap">
+          <div className="chart-wrap chart-card">
             <h3>Breathing (bucketed avg)</h3>
             <ResponsiveContainer width="100%" height={320}>
               <LineChart
@@ -114,13 +114,20 @@ export function RecoveryPage({
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
-                <YAxis />
-                <Tooltip />
+                <YAxis tickFormatter={(v) => Number(v).toFixed(1)} />
+                <Tooltip
+                  separator=""
+                  formatter={(value) =>
+                    value == null
+                      ? ['—', '']
+                      : [`${Number(value).toFixed(1)} / min`, '']
+                  }
+                />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="avg"
-                  name="/min"
+                  name=""
                   stroke="var(--chart-br)"
                   dot={false}
                 />
