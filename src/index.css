@@ -115,3 +115,10 @@ code {
 .chart-wrap .recharts-responsive-container {
   overflow: visible;
 }
+
+/* Brush drag handles: library uses border-colored stroke; make grips high-contrast. */
+.recharts-brush .recharts-brush-traveller rect {
+  fill: var(--text-h) !important;
+  stroke: var(--bg) !important;
+  stroke-width: 1px;
+}

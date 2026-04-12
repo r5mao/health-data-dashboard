@@ -40,9 +40,11 @@ export default function App() {
           <TabButton id="import" current={tab} setTab={setTab} label="Import" />
         </nav>
 
-        <div className="toolbar">
-          <DateRangeControl />
-        </div>
+        {tab !== 'import' && (
+          <div className="toolbar">
+            <DateRangeControl />
+          </div>
+        )}
 
         <main className="main">
           {tab === 'overview' && <Overview dataRevision={dataRevision} />}

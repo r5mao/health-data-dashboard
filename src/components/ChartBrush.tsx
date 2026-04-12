@@ -34,7 +34,7 @@ export function ChartBrush({
       height={height}
       stroke="var(--border)"
       fill="var(--code-bg)"
-      travellerWidth={7}
+      travellerWidth={8}
       dataKey={dataKey}
       tickFormatter={tickFormatter ?? ((v) => defaultTimeLabel(v))}
       alwaysShowText

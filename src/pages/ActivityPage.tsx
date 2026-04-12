@@ -58,14 +58,17 @@ export function ActivityPage({
   return (
     <div className="page">
       <h2>Activity</h2>
-      <p className="muted">
-        Steps and calories use hourly buckets when the toolbar date range is about a week
-        or less; wider ranges use day/week/month buckets. Use the 2d or 7d preset (or any
-        short range) for hourly detail.         The grey range bar under each chart only zooms that
-        chart along time; it does not switch hourly vs daily—that comes from the toolbar
-        range. The two times printed beside that bar are the start and end of the zoomed
-        window. Daily semantics follow max-per-day for totals elsewhere.
-      </p>
+      <details className="page-details">
+        <summary className="page-details-summary">How steps and chart zoom work</summary>
+        <p className="muted page-details-body">
+          Steps and calories use hourly buckets when the toolbar date range is about a week
+          or less; wider ranges use day/week/month buckets. Use the 2d or 7d preset (or any
+          short range) for hourly detail. The grey range bar under each chart only zooms
+          that chart along time; it does not switch hourly vs daily—that comes from the
+          toolbar range. The two times printed beside that bar are the start and end of the
+          zoomed window. Daily semantics follow max-per-day for totals elsewhere.
+        </p>
+      </details>
       {steps.length === 0 && cals.length === 0 && sport.length === 0 ? (
         <p className="muted">No activity data in this range.</p>
       ) : (
