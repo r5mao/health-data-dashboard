@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { formatDateTime12 } from '@/time/formatDateTime12'
 import { useEffect, useMemo, useState } from 'react'
 import {
   CartesianGrid,
@@ -91,8 +91,8 @@ export function RecoveryPage({
                 <tbody>
                   {sleep.map((s) => (
                     <tr key={`${s.startTime}-${s.endTime}`}>
-                      <td>{format(s.startTime, 'PPpp')}</td>
-                      <td>{format(s.endTime, 'PPpp')}</td>
+                      <td>{formatDateTime12(s.startTime)}</td>
+                      <td>{formatDateTime12(s.endTime)}</td>
                       <td>{s.sleepMinutes}</td>
                       <td>{s.deepMinutes}</td>
                       <td>{s.lightMinutes}</td>

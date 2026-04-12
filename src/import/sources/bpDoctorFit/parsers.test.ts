@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  parseBloodOxygenCsv,
   parseBloodPressureCsv,
   parseBreathingCsv,
   parseHeartRateCsv,
+  parseHeatCsv,
+  parsePressureCsv,
   parseStepCsv,
   parseWeightCsv,
 } from '@/import/sources/bpDoctorFit/parsers'
@@ -17,6 +20,17 @@ describe('parseHeartRateCsv', () => {
     expect(rows[0].metricType).toBe('heart_rate')
     expect(rows[0].value).toBe(73)
     expect(rows[0].device).toContain('BP DOCTOR')
+  })
+
+  it('skips user preamble before header row', () => {
+    const csv = `User Name,
+User Email,test@example.com
+Heart Rate (times/minute),Measurement Time,Data Source,Measuring Device
+73,2026-03-12 17:42:00,Non-User Input,BP DOCTOR FIT Y007
+`
+    const rows = parseHeartRateCsv(csv, 'HeartRate_Data.csv')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].value).toBe(73)
   })
 })
 
@@ -67,6 +81,75 @@ Steps,Measurement Time,Data Source,Measuring Device
     const rows = parseStepCsv(csv, 'Step_Data.csv')
     expect(rows).toHaveLength(1)
     expect(rows[0].value).toBe(100)
+  })
+})
+
+describe('parseHeatCsv', () => {
+  it('skips user preamble before header row', () => {
+    const csv = `User Name,
+User Email,test@example.com
+Calories Burned (kcal),Measurement Time,Data Source,Measuring Device
+120,2026-04-10 12:00:00,Non-User Input,BP DOCTOR FIT Y007
+`
+    const rows = parseHeatCsv(csv, 'Heat_Data.csv')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].metricType).toBe('calories')
+    expect(rows[0].value).toBe(120)
+  })
+
+  it('parses without preamble', () => {
+    const csv = `Calories Burned (kcal),Measurement Time,Data Source,Measuring Device
+99,2026-04-10 12:00:00,Non-User Input,BP DOCTOR FIT Y007
+`
+    const rows = parseHeatCsv(csv, 'Heat_Data.csv')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].value).toBe(99)
+  })
+})
+
+describe('parsePressureCsv', () => {
+  it('skips user preamble before header row', () => {
+    const csv = `User Name,
+User Email,test@example.com
+Pressure,Measurement Time,Data Source,Measuring Device
+42,2026-04-10 12:00:00,Non-User Input,BP DOCTOR FIT Y007
+`
+    const rows = parsePressureCsv(csv, 'Pressure_Data.csv')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].metricType).toBe('pressure')
+    expect(rows[0].value).toBe(42)
+  })
+
+  it('parses without preamble', () => {
+    const csv = `Pressure,Measurement Time,Data Source,Measuring Device
+10,2026-04-10 12:00:00,Non-User Input,BP DOCTOR FIT Y007
+`
+    const rows = parsePressureCsv(csv, 'Pressure_Data.csv')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].value).toBe(10)
+  })
+})
+
+describe('parseBloodOxygenCsv', () => {
+  it('skips user preamble before header row', () => {
+    const csv = `User Name,
+User Email,test@example.com
+Blood Oxygen (%),Measurement Time,Data Source,Measuring Device
+98,2026-04-10 12:00:00,Non-User Input,BP DOCTOR FIT Y007
+`
+    const rows = parseBloodOxygenCsv(csv, 'BloodOxygen_Data.csv')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].metricType).toBe('oxygen')
+    expect(rows[0].value).toBe(98)
+  })
+
+  it('parses without preamble', () => {
+    const csv = `Blood Oxygen (%),Measurement Time,Data Source,Measuring Device
+97,2026-04-10 12:00:00,Non-User Input,BP DOCTOR FIT Y007
+`
+    const rows = parseBloodOxygenCsv(csv, 'BloodOxygen_Data.csv')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].value).toBe(97)
   })
 })
 

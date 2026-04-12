@@ -1,4 +1,3 @@
-import { format } from 'date-fns'
 import {
   CartesianGrid,
   ReferenceArea,
@@ -11,6 +10,7 @@ import {
   ZAxis,
 } from 'recharts'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
+import { formatDateTime12 } from '@/time/formatDateTime12'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { toSleepTimelineRows, type SleepTimelineRow } from '@/metrics/sleepChartData'
 import type { SleepSession } from '@/types/canonical'
@@ -81,7 +81,7 @@ export function SleepTimelineChart({
                     className="recharts-tooltip-label"
                     style={{ margin: '0 0 4px', color: 'var(--text-h)' }}
                   >
-                    {format(p.startTime, 'PPp')} → {format(p.endTime, 'PPp')}
+                    {formatDateTime12(p.startTime)} → {formatDateTime12(p.endTime)}
                   </p>
                   <p style={{ margin: 0, color: 'var(--text)' }}>
                     Total {p.sleepMinutes} min

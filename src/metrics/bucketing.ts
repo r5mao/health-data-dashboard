@@ -84,7 +84,7 @@ export function bucketTimeseries(
     .map(([, { t, vals }]) => {
       const label =
         granularity === 'hour'
-          ? format(t, 'MMM d HH:mm')
+          ? format(t, 'MMM d, h:mm a')
           : granularity === 'day'
             ? format(t, 'MMM d')
             : granularity === 'week'

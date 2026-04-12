@@ -42,10 +42,18 @@ export type SleepStackRow = {
 export function toSleepStackRows(sessions: SleepSession[]): SleepStackRow[] {
   const sorted = sortSessionsByEndTime(sessions)
   return sorted.map((s) => ({
-    label: format(s.endTime, 'MMM d, HH:mm'),
+    label: format(s.endTime, 'EEE MMM d, h:mm a'),
     deep: s.deepMinutes,
     light: s.lightMinutes,
     awake: s.awakeMinutes,
     endTime: s.endTime,
   }))
+}
+
+/** Renders duration as `H:MM` (e.g. 90 → 1:30). */
+export function formatMinutesAsHhMm(totalMinutes: number): string {
+  const m = Math.max(0, Math.round(totalMinutes))
+  const h = Math.floor(m / 60)
+  const min = m % 60
+  return `${h}:${String(min).padStart(2, '0')}`
 }

@@ -1,6 +1,5 @@
 import {
   getCell,
-  parseCsvWithHeaders,
   parseCsvWithHeadersAfterPreamble,
   parseDurationToMinutes,
   parseNaiveTimestamp,
@@ -36,7 +35,10 @@ function ts(
 }
 
 export function parseHeartRateCsv(text: string, sourceFile: string): TimeseriesSample[] {
-  const { rows } = parseCsvWithHeaders(text)
+  const { rows } = parseCsvWithHeadersAfterPreamble(text, [
+    'heart rate',
+    'measurement time',
+  ])
   const out: TimeseriesSample[] = []
   for (const row of rows) {
     const v = getCell(
@@ -64,7 +66,10 @@ export function parseHeartRateCsv(text: string, sourceFile: string): TimeseriesS
 }
 
 export function parseHeatCsv(text: string, sourceFile: string): TimeseriesSample[] {
-  const { rows } = parseCsvWithHeaders(text)
+  const { rows } = parseCsvWithHeadersAfterPreamble(text, [
+    'calories burned',
+    'measurement time',
+  ])
   const out: TimeseriesSample[] = []
   for (const row of rows) {
     const v = getCell(row, 'Calories Burned (kcal)', 'Calories Burned').trim()
@@ -205,7 +210,10 @@ export function parseStepCsv(text: string, sourceFile: string): TimeseriesSample
 }
 
 export function parsePressureCsv(text: string, sourceFile: string): TimeseriesSample[] {
-  const { rows } = parseCsvWithHeaders(text)
+  const { rows } = parseCsvWithHeadersAfterPreamble(text, [
+    'pressure',
+    'measurement time',
+  ])
   const out: TimeseriesSample[] = []
   for (const row of rows) {
     const v = getCell(row, 'Pressure').trim()
@@ -251,7 +259,10 @@ export function parseWeightCsv(text: string, sourceFile: string): WeightMeasurem
 }
 
 export function parseBloodOxygenCsv(text: string, sourceFile: string): TimeseriesSample[] {
-  const { rows } = parseCsvWithHeaders(text)
+  const { rows } = parseCsvWithHeadersAfterPreamble(text, [
+    'blood oxygen',
+    'measurement time',
+  ])
   const out: TimeseriesSample[] = []
   for (const row of rows) {
     const v = getCell(

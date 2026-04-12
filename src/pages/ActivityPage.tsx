@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { formatDateTime12 } from '@/time/formatDateTime12'
 import { useEffect, useMemo, useState } from 'react'
 import {
   CartesianGrid,
@@ -95,7 +95,7 @@ export function ActivityPage({
                   separator=""
                   labelFormatter={(_, payload) => {
                     const t = payload?.[0]?.payload?.t as number | undefined
-                    return t != null ? format(t, 'PPpp') : ''
+                    return t != null ? formatDateTime12(t) : ''
                   }}
                   formatter={(value) =>
                     value == null
@@ -137,7 +137,7 @@ export function ActivityPage({
                   separator=""
                   labelFormatter={(_, payload) => {
                     const t = payload?.[0]?.payload?.t as number | undefined
-                    return t != null ? format(t, 'PPpp') : ''
+                    return t != null ? formatDateTime12(t) : ''
                   }}
                   formatter={(value) =>
                     value == null
@@ -176,7 +176,7 @@ export function ActivityPage({
                 <tbody>
                   {sport.map((s, i) => (
                     <tr key={`${s.measurementTime}-${s.sportType}-${i}`}>
-                      <td>{format(s.measurementTime, 'PPpp')}</td>
+                      <td>{formatDateTime12(s.measurementTime)}</td>
                       <td>{s.sportType}</td>
                       <td>{s.durationMinutes}</td>
                       <td>{s.distanceM}</td>

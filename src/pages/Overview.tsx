@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import { formatDateTime12 } from '@/time/formatDateTime12'
 import { useEffect, useState } from 'react'
 import {
   bloodPressureAvgLast7Days,
@@ -75,7 +76,7 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
               ? `${bp.systolic}/${bp.diastolic} mmHg · pulse ${bp.pulse}`
               : '—'
           }
-          sub={bp ? format(bp.timestamp, 'PPpp') : undefined}
+          sub={bp ? formatDateTime12(bp.timestamp) : undefined}
         />
         <Kpi
           title="7-day BP average"
@@ -88,17 +89,17 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         <Kpi
           title="Latest heart rate"
           value={hr ? `${Math.round(hr.value)} bpm` : '—'}
-          sub={hr ? format(hr.timestamp, 'PPpp') : undefined}
+          sub={hr ? formatDateTime12(hr.timestamp) : undefined}
         />
         <Kpi
           title="Latest SpO₂"
           value={spo2 ? `${Math.round(spo2.value)}%` : '—'}
-          sub={spo2 ? format(spo2.timestamp, 'PPpp') : undefined}
+          sub={spo2 ? formatDateTime12(spo2.timestamp) : undefined}
         />
         <Kpi
           title="Latest breathing rate"
           value={breath ? `${breath.value.toFixed(1)} / min` : '—'}
-          sub={breath ? format(breath.timestamp, 'PPpp') : undefined}
+          sub={breath ? formatDateTime12(breath.timestamp) : undefined}
         />
         <Kpi
           title="Latest daily steps (max that day)"
@@ -108,7 +109,7 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         <Kpi
           title="Latest weight"
           value={weight ? `${weight.weightKg.toFixed(1)} kg` : '—'}
-          sub={weight ? format(weight.timestamp, 'PPpp') : undefined}
+          sub={weight ? formatDateTime12(weight.timestamp) : undefined}
         />
       </div>
     </div>

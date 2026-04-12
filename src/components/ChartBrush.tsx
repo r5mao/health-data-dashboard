@@ -12,7 +12,7 @@ type Props = {
 /** Weekday abbrev + day + month abbrev + time (fits brush gutters with chart margins). */
 function defaultTimeLabel(value: unknown): string {
   if (typeof value === 'number' && Number.isFinite(value)) {
-    return format(value, 'EEE d MMM, HH:mm')
+    return format(value, 'EEE d MMM, h:mm a')
   }
   if (value == null) return ''
   return String(value)

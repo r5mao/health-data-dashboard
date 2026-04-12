@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { formatDateTime12 } from '@/time/formatDateTime12'
 import { useEffect, useState } from 'react'
 import {
   CartesianGrid,
@@ -75,7 +75,7 @@ export function BloodPressurePage({
                 <YAxis domain={['auto', 'auto']} unit=" mmHg" />
                 <Tooltip
                   separator=""
-                  labelFormatter={(v) => format(v as number, 'PPpp')}
+                  labelFormatter={(v) => formatDateTime12(v as number)}
                   formatter={(value) =>
                     value == null
                       ? ['—', '']

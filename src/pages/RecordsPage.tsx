@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { formatDateTime12 } from '@/time/formatDateTime12'
 import { useEffect, useState } from 'react'
 import { db } from '@/db/schema'
 
@@ -36,7 +36,7 @@ export function RecordsPage({ dataRevision }: { dataRevision: number }) {
               {meta.map((m) => (
                 <tr key={m.sourceFile}>
                   <td>{m.sourceFile}</td>
-                  <td>{format(m.importedAt, 'PPpp')}</td>
+                  <td>{formatDateTime12(m.importedAt)}</td>
                   <td>{m.rowCounts.timeseries}</td>
                   <td>{m.rowCounts.bloodPressure}</td>
                   <td>{m.rowCounts.sleep}</td>
