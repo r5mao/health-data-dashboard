@@ -8,6 +8,7 @@ type Props = {
 
 export function ImportPanel({ onImported }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const clearDialogRef = useRef<HTMLDialogElement>(null)
   const [status, setStatus] = useState<string | null>(null)
 
   async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -28,6 +29,13 @@ export function ImportPanel({ onImported }: Props) {
     setStatus(lines.join('\n'))
     onImported()
     e.target.value = ''
+  }
+
+  async function confirmClearAll() {
+    clearDialogRef.current?.close()
+    await clearAllData()
+    onImported()
+    setStatus('All data cleared.')
   }
 
   return (
@@ -51,22 +59,39 @@ export function ImportPanel({ onImported }: Props) {
         <button
           type="button"
           className="btn danger"
-          onClick={async () => {
-            if (
-              confirm(
-                'Delete all imported data in this browser? This cannot be undone.',
-              )
-            ) {
-              await clearAllData()
-              onImported()
-              setStatus('All data cleared.')
-            }
-          }}
+          onClick={() => clearDialogRef.current?.showModal()}
         >
           Clear all
         </button>
       </div>
       {status && <pre className="import-status">{status}</pre>}
+
+      <dialog
+        ref={clearDialogRef}
+        className="confirm-dialog"
+        aria-labelledby="clear-all-title"
+        aria-describedby="clear-all-desc"
+      >
+        <h2 id="clear-all-title" className="confirm-dialog-title">
+          Clear all data?
+        </h2>
+        <p id="clear-all-desc" className="muted confirm-dialog-body">
+          This will delete every imported row stored in this browser for this site. The
+          action cannot be undone.
+        </p>
+        <div className="confirm-dialog-actions">
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => clearDialogRef.current?.close()}
+          >
+            Cancel
+          </button>
+          <button type="button" className="btn danger" onClick={() => void confirmClearAll()}>
+            Clear all data
+          </button>
+        </div>
+      </dialog>
     </div>
   )
 }
