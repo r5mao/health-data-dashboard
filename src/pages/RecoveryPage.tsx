@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { ChartBrush } from '@/components/ChartBrush'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
@@ -110,9 +111,17 @@ export function RecoveryPage({
                 margin={LINE_CHART_MARGIN_WITH_BRUSH}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="label" />
+                <XAxis
+                  dataKey="label"
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={10}
+                  interval="preserveStartEnd"
+                />
                 <YAxis
                   domain={[80, 100]}
+                  width={CHART_Y_AXIS_WIDTH}
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={8}
                   tickFormatter={(v) => Number(v).toFixed(1)}
                 />
                 <Tooltip
@@ -142,8 +151,18 @@ export function RecoveryPage({
                 margin={LINE_CHART_MARGIN_WITH_BRUSH}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="label" />
-                <YAxis tickFormatter={(v) => Number(v).toFixed(1)} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={10}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  width={CHART_Y_AXIS_WIDTH + 4}
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={8}
+                  tickFormatter={(v) => Number(v).toFixed(1)}
+                />
                 <Tooltip
                   separator=""
                   formatter={(value) =>

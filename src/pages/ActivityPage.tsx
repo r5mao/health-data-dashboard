@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
@@ -86,11 +87,17 @@ export function ActivityPage({
                   type="number"
                   dataKey="t"
                   domain={['dataMin', 'dataMax']}
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={10}
                   tickFormatter={(v) =>
                     formatTimeAxisTick(v as number, stepsBrush.visibleSpanMs)
                   }
                 />
-                <YAxis />
+                <YAxis
+                  width={CHART_Y_AXIS_WIDTH}
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={8}
+                />
                 <Tooltip
                   separator=""
                   labelFormatter={(_, payload) => {
@@ -127,11 +134,17 @@ export function ActivityPage({
                   type="number"
                   dataKey="t"
                   domain={['dataMin', 'dataMax']}
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={10}
                   tickFormatter={(v) =>
                     formatTimeAxisTick(v as number, calsBrush.visibleSpanMs)
                   }
                 />
-                <YAxis />
+                <YAxis
+                  width={CHART_Y_AXIS_WIDTH}
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={8}
+                />
                 <Tooltip
                   separator=""
                   labelFormatter={(_, payload) => {

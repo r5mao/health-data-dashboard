@@ -160,6 +160,11 @@ code {
   outline: none;
 }
 
+/* Axis tick labels: consistent size; pages also pass tick={{ fontSize: 11 }}. */
+.recharts-cartesian-axis-tick-value {
+  font-size: 11px;
+}
+
 /* Recharts Brush: library paints labels with the same stroke as the frame (too faint). */
 .recharts-brush-texts text {
   fill: var(--text-h) !important;

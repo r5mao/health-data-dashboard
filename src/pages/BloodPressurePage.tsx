@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
@@ -65,7 +66,8 @@ export function BloodPressurePage({
 
   const bpChartMargin = {
     ...LINE_CHART_MARGIN_WITH_BRUSH,
-    bottom: 56,
+    top: 18,
+    bottom: 72,
   } as const
 
   return (
@@ -93,11 +95,19 @@ export function BloodPressurePage({
                   type="number"
                   dataKey="t"
                   domain={['dataMin', 'dataMax']}
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={10}
                   tickFormatter={(v) =>
                     formatTimeAxisTick(v as number, visibleSpanMs)
                   }
                 />
-                <YAxis domain={['auto', 'auto']} unit=" mmHg" />
+                <YAxis
+                  domain={['auto', 'auto']}
+                  unit=" mmHg"
+                  width={CHART_Y_AXIS_WIDTH + 8}
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={8}
+                />
                 <Tooltip
                   separator=""
                   labelFormatter={(v) => formatDateTime12(v as number)}
@@ -133,11 +143,22 @@ export function BloodPressurePage({
             <ResponsiveContainer width="100%" height={280}>
               <LineChart
                 data={daily.filter((d) => d.n > 0)}
-                margin={{ top: 8, right: 16, bottom: 48, left: 16 }}
+                margin={{ top: 14, right: 18, bottom: 58, left: CHART_Y_AXIS_WIDTH + 12 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="label" />
-                <YAxis domain={['auto', 'auto']} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={10}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  domain={['auto', 'auto']}
+                  width={CHART_Y_AXIS_WIDTH + 8}
+                  tick={{ ...CHART_AXIS_TICK }}
+                  tickMargin={8}
+                  unit=" mmHg"
+                />
                 <Tooltip
                   separator=""
                   formatter={(value) =>

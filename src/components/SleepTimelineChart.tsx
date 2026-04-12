@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { formatDateTime12 } from '@/time/formatDateTime12'
+import { CHART_AXIS_TICK } from '@/charts/chartAxis'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { toSleepTimelineRows, type SleepTimelineRow } from '@/metrics/sleepChartData'
@@ -50,6 +51,8 @@ export function SleepTimelineChart({
             dataKey="tMid"
             domain={[rangeStart, rangeEnd]}
             allowDataOverflow
+            tick={{ ...CHART_AXIS_TICK }}
+            tickMargin={10}
             tickFormatter={(v) => formatTimeAxisTick(v as number, spanMs)}
           />
           <YAxis
@@ -59,6 +62,8 @@ export function SleepTimelineChart({
             allowDecimals={false}
             ticks={rows.map((r) => r.row)}
             tickFormatter={(v) => rows[Number(v)]?.rowLabel ?? ''}
+            tick={{ ...CHART_AXIS_TICK, fontSize: 10 }}
+            tickMargin={6}
             width={118}
           />
           <ZAxis type="number" dataKey="z" range={[140, 140]} />

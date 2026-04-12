@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { CHART_AXIS_TICK } from '@/charts/chartAxis'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { formatMinutesAsHhMm, toSleepStackRows } from '@/metrics/sleepChartData'
 import type { SleepSession } from '@/types/canonical'
@@ -41,7 +42,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
         <BarChart
           key={chartResetKey}
           data={rows}
-          margin={{ top: 8, right: 16, left: 12, bottom }}
+          margin={{ top: 12, right: 16, left: 14, bottom: bottom + 4 }}
           maxBarSize={48}
           barCategoryGap="18%"
         >
@@ -49,13 +50,19 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
           <XAxis
             dataKey="label"
             interval={0}
-            tick={{ fontSize: 12 }}
+            tick={{
+              ...CHART_AXIS_TICK,
+              fontSize: labelCount > 5 ? 10 : 11,
+            }}
+            tickMargin={8}
             angle={labelCount > 5 ? -30 : 0}
             textAnchor={labelCount > 5 ? 'end' : 'middle'}
             height={labelCount > 5 ? 72 : 48}
           />
           <YAxis
             tickFormatter={formatYAxisHours}
+            tick={{ ...CHART_AXIS_TICK }}
+            tickMargin={8}
             width={52}
             label={{
               value: 'Hours',
