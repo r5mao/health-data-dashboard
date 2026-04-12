@@ -1,5 +1,5 @@
-/** Decorative tab icons (16×16); keep in sync with stroke weight for visual balance. */
-const icon = { className: 'tab-icon-svg' as const, width: 16, height: 16 }
+/** Decorative tab icons (32×32); keep in sync with stroke weight for visual balance. */
+const icon = { className: 'tab-icon-svg' as const, width: 32, height: 32 }
 
 export function IconOverview() {
   return (
@@ -71,17 +71,36 @@ export function IconBloodPressure() {
   )
 }
 
+/** Dumbbell: two plates + handle; stroke matches other tab icons. */
 export function IconActivity() {
   return (
     <svg {...icon} viewBox="0 0 24 24" aria-hidden>
-      <circle cx="9" cy="5" r="2" fill="currentColor" stroke="none" />
+      <rect
+        x="3.5"
+        y="7"
+        width="5"
+        height="10"
+        rx="1.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <rect
+        x="15.5"
+        y="7"
+        width="5"
+        height="10"
+        rx="1.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
       <path
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M7.5 21l1-6 2.5 3 2-7 3.5 4h3"
+        d="M8.5 12h7"
       />
     </svg>
   )
@@ -96,7 +115,7 @@ export function IconRecovery() {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M21 14.5A8.5 8.5 0 0112.5 6 8.4 8.4 0 0013 21a9 9 0 008-6.5z"
+        d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79z"
       />
     </svg>
   )
