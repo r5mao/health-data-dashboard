@@ -33,6 +33,10 @@
   --chart-sleep-light: #0ea5e9;
   --chart-sleep-awake: #ea580c;
 
+  /* BP reference: Stage 2 hypertension (≥140 systolic / ≥90 diastolic) */
+  --bp-ref-dia-zone: rgba(245, 158, 11, 0.32);
+  --bp-ref-sys-zone: rgba(239, 68, 68, 0.38);
+
   --sans: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
@@ -73,6 +77,8 @@
   --chart-sleep-deep: #a78bfa;
   --chart-sleep-light: #38bdf8;
   --chart-sleep-awake: #fb923c;
+  --bp-ref-dia-zone: rgba(245, 158, 11, 0.28);
+  --bp-ref-sys-zone: rgba(239, 68, 68, 0.34);
 }
 
 :root[data-theme='dark'] #social .button-icon {
