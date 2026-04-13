@@ -19,6 +19,7 @@ import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { db } from '@/db/schema'
 import {
+  bloodPressureHourOfDayAverages,
   bucketBloodPressureDaily,
   bucketTimeseriesAdaptive,
   timeseriesChartGranularityFromMs,
@@ -30,6 +31,21 @@ function bpSeriesSortKey(dataKey: unknown): number {
   if (k === 'sys' || k === 'sysAvg') return 0
   if (k === 'dia' || k === 'diaAvg') return 1
   return 2
+}
+
+/** Clock hour 0–23 → short label (12a, 3p, …). */
+function formatBpHourTick(hour: number): string {
+  const h = ((Math.floor(hour) % 24) + 24) % 24
+  if (h === 0) return '12a'
+  if (h < 12) return `${h}a`
+  if (h === 12) return '12p'
+  return `${h - 12}p`
+}
+
+/** Tooltip: hour slot as "12a–1a". */
+function formatBpHourRangeLabel(hour: number): string {
+  const h = ((Math.floor(hour) % 24) + 24) % 24
+  return `${formatBpHourTick(h)}–${formatBpHourTick(h + 1)}`
 }
 
 function BloodPressureLegend() {
@@ -71,6 +87,7 @@ export function BloodPressurePage({
   const baseGran = timeseriesChartGranularityFromMs(range.end - range.start)
   const daily = bucketBloodPressureDaily(rows, range.start, range.end)
   const dailyData = daily.filter((d) => d.n > 0)
+  const hourOfDayData = useMemo(() => bloodPressureHourOfDayAverages(rows), [rows])
   const hr = useMemo(
     () => bucketTimeseriesAdaptive(hrRows, range.start, range.end, 'heart_rate'),
     [hrRows, range.start, range.end],
@@ -163,7 +180,7 @@ export function BloodPressurePage({
                   </div>
                 )}
                 <div className="drag-zoom-chart">
-                  <ResponsiveContainer width="100%" height={380}>
+                  <ResponsiveContainer width="100%" height={480}>
                     <LineChart
                       key={`bp-readings-${range.start}-${range.end}-${rows.length}`}
                       data={zoom.zoomedData}
@@ -250,7 +267,7 @@ export function BloodPressurePage({
                   </div>
                 )}
                 <div className="drag-zoom-chart">
-                  <ResponsiveContainer width="100%" height={280}>
+                  <ResponsiveContainer width="100%" height={400}>
                     <LineChart
                       data={dailyZoom.zoomedData}
                       margin={{
@@ -325,6 +342,85 @@ export function BloodPressurePage({
                   </ResponsiveContainer>
                 </div>
               </CollapsibleChartCard>
+              <CollapsibleChartCard title="Average by hour of day">
+                <p className="muted" style={{ marginBottom: 10, fontSize: 14 }}>
+                  X-axis is one day (12a → 11p, local time). For each hour, the mean of all
+                  systolic and diastolic readings in that hour across the selected range.
+                  Purple systolic, blue diastolic—same as Readings. Hours with no data show a
+                  gap.
+                </p>
+                <div className="drag-zoom-chart">
+                  <ResponsiveContainer width="100%" height={400}>
+                    <LineChart
+                      data={hourOfDayData}
+                      margin={{
+                        top: 14,
+                        right: 148,
+                        bottom: 58,
+                        left: CHART_Y_AXIS_WIDTH + 12,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <BpThresholdReferenceLines />
+                      <XAxis
+                        type="number"
+                        dataKey="hour"
+                        domain={[-0.5, 23.5]}
+                        ticks={[0, 3, 6, 9, 12, 15, 18, 21, 23]}
+                        tick={{ ...CHART_AXIS_TICK }}
+                        tickMargin={10}
+                        tickFormatter={(v) => formatBpHourTick(Number(v))}
+                        label={{
+                          value: 'Time of day (local)',
+                          position: 'insideBottom',
+                          offset: -4,
+                          style: { fill: 'var(--text)', fontSize: 11 },
+                        }}
+                      />
+                      <YAxis
+                        domain={['auto', 'auto']}
+                        width={CHART_Y_AXIS_WIDTH + 8}
+                        tick={{ ...CHART_AXIS_TICK }}
+                        tickMargin={8}
+                        unit=" mmHg"
+                      />
+                      <Tooltip
+                        separator=""
+                        labelFormatter={(v) => formatBpHourRangeLabel(Number(v))}
+                        formatter={(value) =>
+                          value == null
+                            ? ['—', '']
+                            : [`${Number(value).toFixed(1)} mmHg`, '']
+                        }
+                        itemSorter={(item) => bpSeriesSortKey(item.dataKey)}
+                      />
+                      <BloodPressureLegend />
+                      <Line
+                        type="monotone"
+                        dataKey="sys"
+                        name="Systolic"
+                        stroke="var(--chart-sys)"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        connectNulls={false}
+                        isAnimationActive={false}
+                        zIndex={500}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="dia"
+                        name="Diastolic"
+                        stroke="var(--chart-dia)"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        connectNulls={false}
+                        isAnimationActive={false}
+                        zIndex={500}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CollapsibleChartCard>
             </>
           ) : (
             <p className="muted">No blood pressure readings in this range.</p>
@@ -344,7 +440,7 @@ export function BloodPressurePage({
                 </div>
               )}
               <div className="drag-zoom-chart">
-                <ResponsiveContainer width="100%" height={320}>
+                <ResponsiveContainer width="100%" height={420}>
                   <LineChart
                     key={`bp-hr-${bpResetKey}-${hrData.length}`}
                     data={hrPlotData}
@@ -421,7 +517,7 @@ export function BloodPressurePage({
                 </div>
               )}
               <div className="drag-zoom-chart">
-                <ResponsiveContainer width="100%" height={320}>
+                <ResponsiveContainer width="100%" height={420}>
                   <LineChart
                     key={`bp-pressure-${bpResetKey}-${pressureData.length}`}
                     data={pressurePlotData}

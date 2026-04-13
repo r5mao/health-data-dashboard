@@ -155,3 +155,36 @@ export function bucketBloodPressureDaily(
       n: sys.length,
     }))
 }
+
+/** Mean systolic/diastolic per clock hour (0–23, local time), across all readings in range. */
+export type BpHourOfDayPoint = {
+  hour: number
+  sys: number | null
+  dia: number | null
+  n: number
+}
+
+export function bloodPressureHourOfDayAverages(
+  readings: { timestamp: number; systolic: number; diastolic: number }[],
+): BpHourOfDayPoint[] {
+  const buckets: { sys: number[]; dia: number[] }[] = Array.from({ length: 24 }, () => ({
+    sys: [],
+    dia: [],
+  }))
+  for (const r of readings) {
+    const h = new Date(r.timestamp).getHours()
+    buckets[h].sys.push(r.systolic)
+    buckets[h].dia.push(r.diastolic)
+  }
+  return buckets.map((b, hour) => {
+    if (b.sys.length === 0) {
+      return { hour, sys: null, dia: null, n: 0 }
+    }
+    return {
+      hour,
+      sys: b.sys.reduce((a, c) => a + c, 0) / b.sys.length,
+      dia: b.dia.reduce((a, c) => a + c, 0) / b.dia.length,
+      n: b.sys.length,
+    }
+  })
+}
