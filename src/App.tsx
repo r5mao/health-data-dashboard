@@ -30,7 +30,6 @@ export default function App() {
         <header className="app-header">
           <div className="brand">
             <h1>Health Dashboard</h1>
-            <p className="muted">Local-only. Import CSV exports to view trends.</p>
           </div>
           <div className="header-actions">
             <ThemeControl />
