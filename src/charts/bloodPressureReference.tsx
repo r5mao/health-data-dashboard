@@ -7,31 +7,34 @@ export const BP_STAGE2_DIASTOLIC = 90
 export const BP_SEVERE_SYSTOLIC = 180
 export const BP_SEVERE_DIASTOLIC = 120
 
-/** Softer than data lines; longer gaps reduce visual noise. */
-const DOTTED = '2 7'
-const STROKE_W = 1
+const DOTTED = '4 4'
+const STROKE_W = 1.5
 const REF_Z = 60
 
 const lineBase = {
   strokeWidth: STROKE_W,
   strokeDasharray: DOTTED,
-  strokeOpacity: 0.5,
+  strokeOpacity: 0.95,
   ifOverflow: 'visible' as const,
   zIndex: REF_Z,
 }
 
-function refLabel(text: string) {
+function refLabel(text: string, fillVar: string) {
   return {
     value: text,
     position: 'right' as const,
-    fill: 'var(--bp-ref-label)',
+    fill: fillVar,
     fontSize: 10,
     fontWeight: 500,
   }
 }
 
+/** Label text: diastolic = blue, systolic = purple (same hues for Stage 2 and Severe). */
+const LABEL_DIA = 'var(--bp-ref-label-dia)'
+const LABEL_SYS = 'var(--bp-ref-label-sys)'
+
 /**
- * Horizontal dotted thresholds (behind data lines). Labels on the right identify stage vs severe and measurement.
+ * Dotted blue/purple thresholds (behind data lines). Severe strokes are darker; labels stay series blue/purple.
  */
 export function BpThresholdReferenceLines() {
   return (
@@ -39,26 +42,26 @@ export function BpThresholdReferenceLines() {
       <ReferenceLine
         {...lineBase}
         y={BP_STAGE2_DIASTOLIC}
-        stroke="var(--bp-ref-line-dia-stage2)"
-        label={refLabel('Stage 2 · diastolic')}
+        stroke="var(--bp-ref-dia-stage2)"
+        label={refLabel('Stage 2 · diastolic', LABEL_DIA)}
       />
       <ReferenceLine
         {...lineBase}
         y={BP_STAGE2_SYSTOLIC}
-        stroke="var(--bp-ref-line-sys-stage2)"
-        label={refLabel('Stage 2 · systolic')}
+        stroke="var(--bp-ref-sys-stage2)"
+        label={refLabel('Stage 2 · systolic', LABEL_SYS)}
       />
       <ReferenceLine
         {...lineBase}
         y={BP_SEVERE_DIASTOLIC}
-        stroke="var(--bp-ref-line-dia-severe)"
-        label={refLabel('Severe · diastolic')}
+        stroke="var(--bp-ref-dia-severe)"
+        label={refLabel('Severe · diastolic', LABEL_DIA)}
       />
       <ReferenceLine
         {...lineBase}
         y={BP_SEVERE_SYSTOLIC}
-        stroke="var(--bp-ref-line-sys-severe)"
-        label={refLabel('Severe · systolic')}
+        stroke="var(--bp-ref-sys-severe)"
+        label={refLabel('Severe · systolic', LABEL_SYS)}
       />
     </>
   )
