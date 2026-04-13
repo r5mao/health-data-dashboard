@@ -13,7 +13,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
+import {
+  CHART_AXIS_TICK,
+  CHART_Y_AXIS_WIDTH,
+  padTimeDomainForBars,
+} from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
@@ -96,6 +100,11 @@ export function ActivityPage({
     [ts, range.start, range.end, hrZoom.zoomDomain],
   )
 
+  const stepsXDomain = useMemo(
+    () => padTimeDomainForBars(stepsPlotData),
+    [stepsPlotData],
+  )
+
   return (
     <div className="page">
       <h2>Activity</h2>
@@ -131,7 +140,10 @@ export function ActivityPage({
                 <BarChart
                   key={`steps-${chartResetKey}-${stepsData.length}`}
                   data={stepsPlotData}
-                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  margin={{
+                    ...LINE_CHART_MARGIN_WITH_BRUSH,
+                    left: Math.max(LINE_CHART_MARGIN_WITH_BRUSH.left, 72),
+                  }}
                   barCategoryGap="18%"
                   {...stepsZoom.chartHandlers}
                 >
@@ -139,7 +151,7 @@ export function ActivityPage({
                   <XAxis
                     type="number"
                     dataKey="t"
-                    domain={['dataMin', 'dataMax']}
+                    domain={stepsXDomain ?? ['dataMin', 'dataMax']}
                     tickCount={12}
                     minTickGap={6}
                     tick={{ ...CHART_AXIS_TICK }}

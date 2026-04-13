@@ -9,11 +9,12 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { CHART_AXIS_TICK } from '@/charts/chartAxis'
+import { CHART_AXIS_TICK, padTimeDomainForBars } from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { formatMinutesAsHhMm, toSleepStackRows } from '@/metrics/sleepChartData'
+import { useMemo } from 'react'
 import { formatTooltipDateTime } from '@/time/formatDateTime12'
 import type { SleepSession } from '@/types/canonical'
 
@@ -39,6 +40,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
   if (rows.length === 0) return null
 
   const data = zoom.zoomedData
+  const xDomain = useMemo(() => padTimeDomainForBars(data), [data])
   const labelCount = data.length
   const bottom = labelCount > 8 ? 88 : labelCount > 4 ? 64 : 48
   const tickCount = Math.min(14, Math.max(6, labelCount))
@@ -62,7 +64,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
           <BarChart
             key={chartResetKey}
             data={data}
-            margin={{ top: 12, right: 16, left: 14, bottom: bottom + 4 }}
+            margin={{ top: 12, right: 16, left: 56, bottom: bottom + 4 }}
             maxBarSize={48}
             barCategoryGap="18%"
             {...zoom.chartHandlers}
@@ -71,7 +73,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
             <XAxis
               type="number"
               dataKey="t"
-              domain={['dataMin', 'dataMax']}
+              domain={xDomain ?? ['dataMin', 'dataMax']}
               tickCount={tickCount}
               minTickGap={4}
               tick={{
@@ -93,6 +95,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
                 value: 'Hours',
                 angle: -90,
                 position: 'insideLeft',
+                offset: 10,
                 style: { fill: 'var(--text)' },
               }}
             />
