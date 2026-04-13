@@ -282,6 +282,45 @@
   gap: 0.5rem;
 }
 
+.import-dropzone {
+  width: 100%;
+  max-width: 40rem;
+  box-sizing: border-box;
+  padding: 0.95rem 1rem;
+  border: 1px dashed color-mix(in srgb, var(--accent-border) 70%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-bg) 35%, var(--surface-raised));
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.import-dropzone:hover,
+.import-dropzone.drag-active {
+  border-color: var(--accent-border);
+  background: color-mix(in srgb, var(--accent-bg) 55%, var(--surface-raised));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-border) 20%, transparent);
+}
+
+.import-dropzone:focus-visible {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 2px;
+}
+
+.import-dropzone-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.import-dropzone-subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+}
+
 .file-input {
   display: none;
 }

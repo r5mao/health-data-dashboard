@@ -14,9 +14,9 @@ export function ImportPanel({ onImported }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const clearDialogRef = useRef<HTMLDialogElement>(null)
   const [banner, setBanner] = useState<BannerState>(null)
+  const [isDragActive, setIsDragActive] = useState(false)
 
-  async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files
+  async function importFiles(files: FileList | File[]) {
     if (!files?.length) return
 
     let importedCount = 0
@@ -53,7 +53,21 @@ export function ImportPanel({ onImported }: Props) {
             : `Import failed for ${failedCount} file${failedCount === 1 ? '' : 's'}.`,
       })
     }
+  }
+
+  async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    await importFiles(files ?? [])
     e.target.value = ''
+  }
+
+  async function onDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    setIsDragActive(false)
+    const files = Array.from(e.dataTransfer.files).filter((f) =>
+      f.name.toLowerCase().endsWith('.csv'),
+    )
+    await importFiles(files)
   }
 
   async function confirmClearAll() {
@@ -86,6 +100,33 @@ export function ImportPanel({ onImported }: Props) {
           </button>
         </div>
       )}
+      <div
+        className={`import-dropzone${isDragActive ? ' drag-active' : ''}`}
+        role="button"
+        tabIndex={0}
+        onDragOver={(e) => {
+          e.preventDefault()
+          setIsDragActive(true)
+        }}
+        onDragEnter={() => setIsDragActive(true)}
+        onDragLeave={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+            setIsDragActive(false)
+          }
+        }}
+        onDrop={(e) => void onDrop(e)}
+        onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            inputRef.current?.click()
+          }
+        }}
+        aria-label="Drop CSV files here or press Enter to browse files"
+      >
+        <p className="import-dropzone-title">Drag and drop CSV files here</p>
+        <p className="muted import-dropzone-subtitle">or click to browse</p>
+      </div>
       <div className="import-panel">
         <input
           ref={inputRef}
