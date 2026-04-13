@@ -1,8 +1,11 @@
 import { format } from 'date-fns'
 
 /** Full calendar date + time with 12-hour clock (tables, tooltips, overview). */
-export function formatDateTime12(ts: number | Date): string {
-  return format(ts, 'MMM d, yyyy, h:mm:ss a')
+export function formatDateTime12(
+  ts: number | Date,
+  options?: { withSeconds?: boolean },
+): string {
+  return format(ts, options?.withSeconds === false ? 'MMM d, yyyy, h:mm a' : 'MMM d, yyyy, h:mm:ss a')
 }
 
 /** Tooltip/hover datetime: include weekday, drop seconds. */

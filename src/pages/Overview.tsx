@@ -37,7 +37,6 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
   const [spo2Trend, setSpo2Trend] = useState<number[]>([])
   const [breathTrend, setBreathTrend] = useState<number[]>([])
   const [stepsTrend, setStepsTrend] = useState<number[]>([])
-  const [weightTrend, setWeightTrend] = useState<number[]>([])
 
   useEffect(() => {
     void (async () => {
@@ -53,7 +52,6 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         oxygenSeries,
         breathingSeries,
         stepSeries,
-        weightSeries,
       ] = await Promise.all([
         latestBloodPressure(),
         bloodPressureAvgLast7Days(),
@@ -66,7 +64,6 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         loadMetricTrend('oxygen', 14),
         loadMetricTrend('breathing', 14),
         loadRecentDailyStepMaxima(7),
-        loadRecentWeightTrend(10),
       ])
       setBp(lbp)
       setBp7(avg7)
@@ -79,7 +76,6 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
       setSpo2Trend(oxygenSeries)
       setBreathTrend(breathingSeries)
       setStepsTrend(stepSeries)
-      setWeightTrend(weightSeries)
     })()
   }, [dataRevision])
 
@@ -98,7 +94,7 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
               ? `${bp.systolic}/${bp.diastolic} mmHg · pulse ${bp.pulse}`
               : '—'
           }
-          sub={bp ? formatDateTime12(bp.timestamp) : undefined}
+          sub={bp ? formatDateTime12(bp.timestamp, { withSeconds: false }) : undefined}
           visual={
             bp ? (
               <div className="kpi-gauge-row">
@@ -175,13 +171,13 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         <Kpi
           title="Latest heart rate"
           value={hr ? `${Math.round(hr.value)} bpm` : '—'}
-          sub={hr ? formatDateTime12(hr.timestamp) : undefined}
+          sub={hr ? formatDateTime12(hr.timestamp, { withSeconds: false }) : undefined}
           visual={<MiniSparkline values={hrTrend} color="var(--chart-sys)" />}
         />
         <Kpi
           title="Latest SpO₂"
           value={spo2 ? `${Number(spo2.value).toFixed(1)}%` : '—'}
-          sub={spo2 ? formatDateTime12(spo2.timestamp) : undefined}
+          sub={spo2 ? formatDateTime12(spo2.timestamp, { withSeconds: false }) : undefined}
           visual={
             spo2 ? (
               <MiniGauge
@@ -204,7 +200,7 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         <Kpi
           title="Latest breathing rate"
           value={breath ? `${breath.value.toFixed(1)} / min` : '—'}
-          sub={breath ? formatDateTime12(breath.timestamp) : undefined}
+          sub={breath ? formatDateTime12(breath.timestamp, { withSeconds: false }) : undefined}
           visual={<MiniSparkline values={breathTrend} color="var(--chart-br)" />}
         />
         <Kpi
@@ -215,9 +211,12 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         />
         <Kpi
           title="Latest weight"
-          value={weight ? `${weight.weightKg.toFixed(1)} kg` : '—'}
-          sub={weight ? formatDateTime12(weight.timestamp) : undefined}
-          visual={<MiniSparkline values={weightTrend} color="var(--chart-dia)" />}
+          value={
+            weight
+              ? `${weight.weightKg.toFixed(1)} kg (${(weight.weightKg * 2.2046226218).toFixed(1)} lb)`
+              : '—'
+          }
+          sub={weight ? formatDateTime12(weight.timestamp, { withSeconds: false }) : undefined}
         />
       </div>
     </div>
@@ -239,7 +238,9 @@ function Kpi({
     <div className="kpi">
       <div className="kpi-title">{title}</div>
       <div className="kpi-value">{value}</div>
-      <div className="kpi-visual">{visual ?? <div className="kpi-visual-empty" />}</div>
+      {visual !== undefined && (
+        <div className="kpi-visual">{visual ?? <div className="kpi-visual-empty" />}</div>
+      )}
       {sub && <div className="kpi-sub muted">{sub}</div>}
     </div>
   )
@@ -445,7 +446,3 @@ async function loadRecentDailyStepMaxima(days: number): Promise<number[]> {
     .map((entry) => entry[1])
 }
 
-async function loadRecentWeightTrend(limit: number): Promise<number[]> {
-  const rows = await db.weightMeasurements.orderBy('timestamp').toArray()
-  return rows.slice(-limit).map((r) => r.weightKg)
-}
