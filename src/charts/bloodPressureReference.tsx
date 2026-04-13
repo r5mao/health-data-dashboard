@@ -43,25 +43,25 @@ export function BpThresholdReferenceLines() {
         {...lineBase}
         y={BP_STAGE2_DIASTOLIC}
         stroke="var(--bp-ref-dia-stage2)"
-        label={refLabel('Stage 2 · diastolic', LABEL_DIA)}
+        label={refLabel('Stage 2 · dia', LABEL_DIA)}
       />
       <ReferenceLine
         {...lineBase}
         y={BP_STAGE2_SYSTOLIC}
         stroke="var(--bp-ref-sys-stage2)"
-        label={refLabel('Stage 2 · systolic', LABEL_SYS)}
+        label={refLabel('Stage 2 · sys', LABEL_SYS)}
       />
       <ReferenceLine
         {...lineBase}
         y={BP_SEVERE_DIASTOLIC}
         stroke="var(--bp-ref-dia-severe)"
-        label={refLabel('Severe · diastolic', LABEL_DIA)}
+        label={refLabel('Severe · dias', LABEL_DIA)}
       />
       <ReferenceLine
         {...lineBase}
         y={BP_SEVERE_SYSTOLIC}
         stroke="var(--bp-ref-sys-severe)"
-        label={refLabel('Severe · systolic', LABEL_SYS)}
+        label={refLabel('Severe · sys', LABEL_SYS)}
       />
     </>
   )
