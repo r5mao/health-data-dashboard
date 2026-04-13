@@ -101,13 +101,14 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
                 <MiniGauge
                   label="Systolic"
                   value={bp.systolic}
-                  min={80}
-                  max={180}
+                  min={90}
+                  max={210}
                   segments={[
                     { upto: 120, color: '#16a34a' },
                     { upto: 130, color: '#eab308' },
                     { upto: 140, color: '#f97316' },
                     { upto: 180, color: '#dc2626' },
+                    { upto: 210, color: '#991b1b' },
                   ]}
                   valueSuffix=""
                 />
@@ -115,12 +116,12 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
                   label="Diastolic"
                   value={bp.diastolic}
                   min={50}
-                  max={120}
+                  max={130}
                   segments={[
                     { upto: 80, color: '#16a34a' },
-                    { upto: 90, color: '#eab308' },
-                    { upto: 100, color: '#f97316' },
+                    { upto: 90, color: '#f97316' },
                     { upto: 120, color: '#dc2626' },
+                    { upto: 130, color: '#991b1b' },
                   ]}
                   valueSuffix=""
                 />
@@ -141,13 +142,14 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
                 <MiniGauge
                   label="Avg sys"
                   value={bp7.systolic}
-                  min={80}
-                  max={180}
+                  min={90}
+                  max={210}
                   segments={[
                     { upto: 120, color: '#16a34a' },
                     { upto: 130, color: '#eab308' },
                     { upto: 140, color: '#f97316' },
                     { upto: 180, color: '#dc2626' },
+                    { upto: 210, color: '#991b1b' },
                   ]}
                   valueSuffix=""
                 />
@@ -155,12 +157,12 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
                   label="Avg dia"
                   value={bp7.diastolic}
                   min={50}
-                  max={120}
+                  max={130}
                   segments={[
                     { upto: 80, color: '#16a34a' },
-                    { upto: 90, color: '#eab308' },
-                    { upto: 100, color: '#f97316' },
+                    { upto: 90, color: '#f97316' },
                     { upto: 120, color: '#dc2626' },
+                    { upto: 130, color: '#991b1b' },
                   ]}
                   valueSuffix=""
                 />
@@ -350,26 +352,35 @@ function MiniGauge({
 }) {
   const clamped = Math.min(Math.max(value, min), max)
   const ratio = (clamped - min) / Math.max(1, max - min)
-  const needleAngle = -130 + ratio * 260
   const centerX = 60
-  const centerY = 56
-  const radius = 40
-  const start = -130
+  const centerY = 66
+  const radius = 44
+  const startAngle = 270
+  const gaugeSweep = 180
+  const needleAngle = startAngle + ratio * gaugeSweep
   const segmentArcs: Array<{ startAngle: number; endAngle: number; color: string }> = []
   let current = min
   for (const segment of segments) {
     const segEnd = Math.min(segment.upto, max)
     if (segEnd > current) {
-      const startAngle = start + ((current - min) / (max - min)) * 260
-      const endAngle = start + ((segEnd - min) / (max - min)) * 260
-      segmentArcs.push({ startAngle, endAngle, color: segment.color })
+      const arcStart = startAngle + ((current - min) / (max - min)) * gaugeSweep
+      const arcEnd = startAngle + ((segEnd - min) / (max - min)) * gaugeSweep
+      segmentArcs.push({ startAngle: arcStart, endAngle: arcEnd, color: segment.color })
       current = segEnd
     }
   }
+  const needleEnd = polarFromGaugeAngle(centerX, centerY, radius - 12, needleAngle)
 
   return (
     <div className="kpi-mini-gauge">
-      <svg width={120} height={72} viewBox="0 0 120 72" role="img" aria-label={label}>
+      <svg width={120} height={86} viewBox="0 0 120 86" role="img" aria-label={label}>
+        <path
+          d={describeArc(centerX, centerY, radius, startAngle, startAngle + gaugeSweep)}
+          fill="none"
+          stroke="color-mix(in srgb, var(--border) 70%, transparent)"
+          strokeWidth={8}
+          strokeLinecap="round"
+        />
         {segmentArcs.map((arc, idx) => (
           <path
             key={idx}
@@ -383,13 +394,19 @@ function MiniGauge({
         <line
           x1={centerX}
           y1={centerY}
-          x2={centerX + Math.cos((needleAngle * Math.PI) / 180) * 28}
-          y2={centerY + Math.sin((needleAngle * Math.PI) / 180) * 28}
+          x2={needleEnd.x}
+          y2={needleEnd.y}
           stroke="var(--text-h)"
           strokeWidth={2.5}
           strokeLinecap="round"
         />
         <circle cx={centerX} cy={centerY} r={3.2} fill="var(--text-h)" />
+        <text x={12} y={82} className="kpi-mini-gauge-tick">
+          {Math.round(min)}
+        </text>
+        <text x={108} y={82} textAnchor="end" className="kpi-mini-gauge-tick">
+          {Math.round(max)}
+        </text>
       </svg>
       <div className="kpi-mini-gauge-label">{label}</div>
       <div className="kpi-mini-gauge-value">
@@ -407,19 +424,19 @@ function describeArc(
   startAngleDeg: number,
   endAngleDeg: number,
 ): string {
-  const start = polarToCartesian(cx, cy, radius, endAngleDeg)
-  const end = polarToCartesian(cx, cy, radius, startAngleDeg)
+  const start = polarFromGaugeAngle(cx, cy, radius, startAngleDeg)
+  const end = polarFromGaugeAngle(cx, cy, radius, endAngleDeg)
   const largeArcFlag = endAngleDeg - startAngleDeg <= 180 ? 0 : 1
-  return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`
+  return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`
 }
 
-function polarToCartesian(
+function polarFromGaugeAngle(
   cx: number,
   cy: number,
   radius: number,
   angleDeg: number,
 ): { x: number; y: number } {
-  const radians = (angleDeg * Math.PI) / 180
+  const radians = ((angleDeg - 90) * Math.PI) / 180
   return {
     x: cx + radius * Math.cos(radians),
     y: cy + radius * Math.sin(radians),

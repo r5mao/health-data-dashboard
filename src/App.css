@@ -584,11 +584,11 @@
 
 .kpi-mini-gauge svg {
   width: 100%;
-  height: 56px;
+  height: 72px;
 }
 
 .kpi-mini-gauge-label {
-  margin-top: -4px;
+  margin-top: -2px;
   font-size: 0.66rem;
   color: var(--text);
   font-weight: 500;
@@ -599,6 +599,12 @@
   color: var(--text-h);
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+.kpi-mini-gauge-tick {
+  font-size: 7px;
+  fill: var(--text);
+  opacity: 0.85;
 }
 
 .chart-wrap {
