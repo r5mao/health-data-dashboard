@@ -22,15 +22,18 @@ test.describe('Tab navigation', () => {
   }
 
   test('hides date range toolbar on Import tab', async ({ page }) => {
-    await navigateToTab(page, 'Overview')
+    await navigateToTab(page, 'Blood pressure')
     await expect(page.locator('.date-range-bar')).toBeVisible()
 
     await navigateToTab(page, 'Import')
     await expect(page.locator('.date-range-bar')).toBeHidden()
   })
 
-  test('shows date range toolbar on data tabs', async ({ page }) => {
-    for (const tab of ['Overview', 'Blood pressure', 'Activity', 'Recovery']) {
+  test('shows date range toolbar on chart tabs (not Overview)', async ({ page }) => {
+    await navigateToTab(page, 'Overview')
+    await expect(page.locator('.date-range-bar')).toBeHidden()
+
+    for (const tab of ['Blood pressure', 'Activity', 'Recovery']) {
       await navigateToTab(page, tab)
       await expect(page.locator('.date-range-bar')).toBeVisible()
     }

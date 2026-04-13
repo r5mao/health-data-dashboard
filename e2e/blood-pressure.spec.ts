@@ -9,7 +9,11 @@ test.describe('Blood pressure page with data', () => {
   })
 
   test('does not show empty state', async ({ page }) => {
-    await expect(page.getByText('No readings in this range')).toBeHidden()
+    await expect(
+      page.getByText(
+        /No blood pressure, heart-rate, or pressure-index readings in this range/,
+      ),
+    ).toBeHidden()
   })
 
   test('renders Readings chart card', async ({ page }) => {
@@ -32,6 +36,10 @@ test.describe('Blood pressure page empty state', () => {
   test('shows empty message when no BP data imported', async ({ page }) => {
     await page.goto('/')
     await navigateToTab(page, 'Blood pressure')
-    await expect(page.getByText('No readings in this range')).toBeVisible()
+    await expect(
+      page.getByText(
+        /No blood pressure, heart-rate, or pressure-index readings in this range/,
+      ),
+    ).toBeVisible()
   })
 })
