@@ -24,8 +24,10 @@ function refLabel(text: string, fillVar: string) {
     value: text,
     position: 'right' as const,
     fill: fillVar,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: 500,
+    /** Nudge past the line end so the stroke does not cross the first glyph. */
+    dx: 6,
   }
 }
 

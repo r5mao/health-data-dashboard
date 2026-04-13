@@ -48,14 +48,32 @@ function formatBpHourRangeLabel(hour: number): string {
   return `${formatBpHourTick(h)}–${formatBpHourTick(h + 1)}`
 }
 
+const BP_LEGEND_STYLE = {
+  fontSize: 11,
+  paddingBottom: 2,
+} as const
+
 function BloodPressureLegend() {
   return (
     <Legend
-      verticalAlign="bottom"
-      align="center"
-      layout="vertical"
-      wrapperStyle={{ paddingTop: 6 }}
+      verticalAlign="top"
+      align="right"
+      layout="horizontal"
+      wrapperStyle={BP_LEGEND_STYLE}
+      iconSize={10}
       itemSorter={(item) => bpSeriesSortKey(item.dataKey)}
+    />
+  )
+}
+
+function TimeseriesLegendRight() {
+  return (
+    <Legend
+      verticalAlign="top"
+      align="right"
+      layout="horizontal"
+      wrapperStyle={BP_LEGEND_STYLE}
+      iconSize={10}
     />
   )
 }
@@ -133,11 +151,32 @@ export function BloodPressurePage({
     [pressureRows, range.start, range.end, pressureZoom.zoomDomain],
   )
 
+  /** Top: horizontal legend. Right: reference-line labels only (legend moved off the right edge). */
   const bpChartMargin = {
     ...LINE_CHART_MARGIN_WITH_BRUSH,
-    top: 18,
-    bottom: 72,
-    right: 168,
+    top: 34,
+    bottom: 56,
+    right: 96,
+  } as const
+
+  const bpDualLineMargin = {
+    top: 30,
+    right: 96,
+    bottom: 56,
+    left: CHART_Y_AXIS_WIDTH + 12,
+  } as const
+
+  const bpHourOfDayMargin = {
+    top: 30,
+    right: 96,
+    bottom: 68,
+    left: CHART_Y_AXIS_WIDTH + 12,
+  } as const
+
+  const bpTimeseriesMargin = {
+    ...LINE_CHART_MARGIN_WITH_BRUSH,
+    top: 28,
+    right: 88,
   } as const
 
   return (
@@ -180,7 +219,7 @@ export function BloodPressurePage({
                   </div>
                 )}
                 <div className="drag-zoom-chart">
-                  <ResponsiveContainer width="100%" height={480}>
+                  <ResponsiveContainer width="100%" height={560}>
                     <LineChart
                       key={`bp-readings-${range.start}-${range.end}-${rows.length}`}
                       data={zoom.zoomedData}
@@ -267,15 +306,10 @@ export function BloodPressurePage({
                   </div>
                 )}
                 <div className="drag-zoom-chart">
-                  <ResponsiveContainer width="100%" height={400}>
+                  <ResponsiveContainer width="100%" height={480}>
                     <LineChart
                       data={dailyZoom.zoomedData}
-                      margin={{
-                        top: 14,
-                        right: 148,
-                        bottom: 58,
-                        left: CHART_Y_AXIS_WIDTH + 12,
-                      }}
+                      margin={bpDualLineMargin}
                       {...dailyZoom.chartHandlers}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
@@ -350,15 +384,10 @@ export function BloodPressurePage({
                   gap.
                 </p>
                 <div className="drag-zoom-chart">
-                  <ResponsiveContainer width="100%" height={400}>
+                  <ResponsiveContainer width="100%" height={480}>
                     <LineChart
                       data={hourOfDayData}
-                      margin={{
-                        top: 14,
-                        right: 148,
-                        bottom: 58,
-                        left: CHART_Y_AXIS_WIDTH + 12,
-                      }}
+                      margin={bpHourOfDayMargin}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <BpThresholdReferenceLines />
@@ -440,11 +469,11 @@ export function BloodPressurePage({
                 </div>
               )}
               <div className="drag-zoom-chart">
-                <ResponsiveContainer width="100%" height={420}>
+                <ResponsiveContainer width="100%" height={500}>
                   <LineChart
                     key={`bp-hr-${bpResetKey}-${hrData.length}`}
                     data={hrPlotData}
-                    margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                    margin={bpTimeseriesMargin}
                     {...hrZoom.chartHandlers}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -477,11 +506,11 @@ export function BloodPressurePage({
                           : [`${Number(value).toFixed(1)} bpm`, '']
                       }
                     />
-                    <Legend />
+                    <TimeseriesLegendRight />
                     <Line
                       type="monotone"
                       dataKey="avg"
-                      name=""
+                      name="Heart rate"
                       stroke="var(--chart-hr)"
                       dot={false}
                     />
@@ -517,11 +546,11 @@ export function BloodPressurePage({
                 </div>
               )}
               <div className="drag-zoom-chart">
-                <ResponsiveContainer width="100%" height={420}>
+                <ResponsiveContainer width="100%" height={500}>
                   <LineChart
                     key={`bp-pressure-${bpResetKey}-${pressureData.length}`}
                     data={pressurePlotData}
-                    margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                    margin={bpTimeseriesMargin}
                     {...pressureZoom.chartHandlers}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -554,11 +583,11 @@ export function BloodPressurePage({
                           : [`${Number(value).toFixed(1)} index`, '']
                       }
                     />
-                    <Legend />
+                    <TimeseriesLegendRight />
                     <Line
                       type="monotone"
                       dataKey="avg"
-                      name=""
+                      name="Pressure index"
                       stroke="var(--chart-pressure)"
                       dot={false}
                     />
