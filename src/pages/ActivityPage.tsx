@@ -51,14 +51,20 @@ export function ActivityPage({
     () => bucketTimeseries(ts, range.start, range.end, gran, 'calories'),
     [ts, range.start, range.end, gran],
   )
+  const hr = useMemo(
+    () => bucketTimeseries(ts, range.start, range.end, gran, 'heart_rate'),
+    [ts, range.start, range.end, gran],
+  )
 
   const stepsData = useMemo(() => steps.filter((d) => d.count > 0), [steps])
   const calsData = useMemo(() => cals.filter((d) => d.count > 0), [cals])
+  const hrData = useMemo(() => hr.filter((d) => d.count > 0), [hr])
 
   const chartResetKey = `${range.start}-${range.end}-${dataRevision}-${gran}-${ts.length}`
 
   const stepsZoom = useChartDragZoom(stepsData, chartResetKey)
   const calsZoom = useChartDragZoom(calsData, chartResetKey)
+  const hrZoom = useChartDragZoom(hrData, chartResetKey)
 
   return (
     <div className="page">
@@ -66,14 +72,14 @@ export function ActivityPage({
       <details className="page-details">
         <summary className="page-details-summary">How steps and chart zoom work</summary>
         <p className="muted page-details-body">
-          Steps and calories use hourly buckets when the toolbar date range is about a week
-          or less; wider ranges use day/week/month buckets. Use the 2d or 7d preset (or any
-          short range) for hourly detail. Drag across a chart to zoom into a time window, or
-          use the range bar underneath. The two zoom mechanisms are independent—drag zoom
-          replaces the range bar while active.
+          Steps, calories, and heart rate use hourly buckets when the toolbar date range is
+          about a week or less; wider ranges use day/week/month buckets. Use the 2d or 7d
+          preset (or any short range) for hourly detail. Drag across a chart to zoom into a
+          time window, or use the range bar underneath. The two zoom mechanisms are
+          independent—drag zoom replaces the range bar while active.
         </p>
       </details>
-      {steps.length === 0 && cals.length === 0 && sport.length === 0 ? (
+      {steps.length === 0 && cals.length === 0 && hr.length === 0 && sport.length === 0 ? (
         <p className="muted">No activity data in this range.</p>
       ) : (
         <>
@@ -193,7 +199,7 @@ export function ActivityPage({
                     formatter={(value) =>
                       value == null
                         ? ['—', '']
-                        : [`${Number(value).toFixed(1)}`, '']
+                        : [`${Number(value).toFixed(1)} bpm`, '']
                     }
                   />
                   <Legend />
@@ -215,6 +221,79 @@ export function ActivityPage({
                     />
                   )}
 
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CollapsibleChartCard>
+          <CollapsibleChartCard title="Heart rate (bucketed avg)">
+            {hrZoom.isZoomed && (
+              <div className="zoom-reset-bar">
+                <span className="zoom-reset-label">Zoomed in</span>
+                <button
+                  type="button"
+                  className="btn secondary zoom-reset-btn"
+                  onClick={hrZoom.resetZoom}
+                >
+                  Reset zoom
+                </button>
+              </div>
+            )}
+            <div className="drag-zoom-chart">
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart
+                  key={`hr-${chartResetKey}-${hrData.length}`}
+                  data={hrZoom.zoomedData}
+                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  {...hrZoom.chartHandlers}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    type="number"
+                    dataKey="t"
+                    domain={['dataMin', 'dataMax']}
+                    tickCount={12}
+                    minTickGap={6}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={10}
+                    tickFormatter={(v) =>
+                      formatTimeAxisTick(v as number, hrZoom.visibleSpanMs)
+                    }
+                  />
+                  <YAxis
+                    width={CHART_Y_AXIS_WIDTH}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={8}
+                  />
+                  <Tooltip
+                    separator=""
+                    labelFormatter={(_, payload) => {
+                      const t = payload?.[0]?.payload?.t as number | undefined
+                      return t != null ? formatTooltipDateTime(t) : ''
+                    }}
+                    formatter={(value) =>
+                      value == null
+                        ? ['—', '']
+                        : [`${Number(value).toFixed(1)}`, '']
+                    }
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="avg"
+                    name=""
+                    stroke="var(--chart-hr)"
+                    dot={false}
+                  />
+                  {hrZoom.selArea && (
+                    <ReferenceArea
+                      x1={hrZoom.selArea.x1}
+                      x2={hrZoom.selArea.x2}
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      stroke="var(--accent)"
+                      strokeOpacity={0.4}
+                    />
+                  )}
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -261,7 +340,9 @@ async function loadTs(start: number, end: number) {
     (r) =>
       r.timestamp >= start &&
       r.timestamp <= end &&
-      (r.metricType === 'steps' || r.metricType === 'calories'),
+      (r.metricType === 'steps' ||
+        r.metricType === 'calories' ||
+        r.metricType === 'heart_rate'),
   )
 }
 

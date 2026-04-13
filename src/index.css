@@ -26,6 +26,7 @@
   --chart-dia: #2563eb;
   --chart-steps: #059669;
   --chart-cal: #d97706;
+  --chart-hr: #dc2626;
   --chart-o2: #0ea5e9;
   --chart-br: #db2777;
   --chart-sleep-window: rgba(124, 58, 237, 0.38);
@@ -81,6 +82,7 @@
   --chart-sleep-deep: #a78bfa;
   --chart-sleep-light: #38bdf8;
   --chart-sleep-awake: #fb923c;
+  --chart-hr: #f87171;
   --bp-ref-dia-stage2: #60a5fa;
   --bp-ref-sys-stage2: #a78bfa;
   --bp-ref-dia-severe: #3b82f6;

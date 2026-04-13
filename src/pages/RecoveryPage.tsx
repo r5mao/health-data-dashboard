@@ -45,9 +45,11 @@ export function RecoveryPage({
 
   const o2 = bucketTimeseries(ts, range.start, range.end, gran, 'oxygen')
   const br = bucketTimeseries(ts, range.start, range.end, gran, 'breathing')
+  const hr = bucketTimeseries(ts, range.start, range.end, gran, 'heart_rate')
 
   const o2Data = useMemo(() => o2.filter((d) => d.count > 0), [o2])
   const brData = useMemo(() => br.filter((d) => d.count > 0), [br])
+  const hrData = useMemo(() => hr.filter((d) => d.count > 0), [hr])
 
   const sleepChartResetKey = useMemo(
     () => `${range.start}-${range.end}-${dataRevision}-${sleep.length}`,
@@ -57,15 +59,16 @@ export function RecoveryPage({
 
   const o2Zoom = useChartDragZoom(o2Data, chartResetKey)
   const brZoom = useChartDragZoom(brData, chartResetKey)
+  const hrZoom = useChartDragZoom(hrData, chartResetKey)
 
   return (
     <div className="page">
       <h2>Recovery</h2>
       <p className="muted">
-        Sleep sessions, SpO₂, and breathing in the selected range. Drag across a chart to
-        zoom, or use the toolbar to change the date window.
+        Sleep sessions, SpO₂, breathing, and heart rate in the selected range. Drag across
+        a chart to zoom, or use the toolbar to change the date window.
       </p>
-      {sleep.length === 0 && o2.length === 0 && br.length === 0 ? (
+      {sleep.length === 0 && o2.length === 0 && br.length === 0 && hr.length === 0 ? (
         <p className="muted">No recovery metrics in this range.</p>
       ) : (
         <>
@@ -254,6 +257,76 @@ export function RecoveryPage({
               </ResponsiveContainer>
             </div>
           </CollapsibleChartCard>
+          <CollapsibleChartCard title="Heart rate (bucketed avg)">
+            {hrZoom.isZoomed && (
+              <div className="zoom-reset-bar">
+                <span className="zoom-reset-label">Zoomed in</span>
+                <button
+                  type="button"
+                  className="btn secondary zoom-reset-btn"
+                  onClick={hrZoom.resetZoom}
+                >
+                  Reset zoom
+                </button>
+              </div>
+            )}
+            <div className="drag-zoom-chart">
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart
+                  data={hrZoom.zoomedData}
+                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  {...hrZoom.chartHandlers}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    type="number"
+                    dataKey="t"
+                    domain={['dataMin', 'dataMax']}
+                    tickCount={12}
+                    minTickGap={6}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={10}
+                    tickFormatter={(v) =>
+                      formatTimeAxisTick(v as number, hrZoom.visibleSpanMs)
+                    }
+                  />
+                  <YAxis
+                    width={CHART_Y_AXIS_WIDTH + 4}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={8}
+                    tickFormatter={(v) => Number(v).toFixed(1)}
+                  />
+                  <Tooltip
+                    separator=""
+                    labelFormatter={(v) => formatTooltipDateTime(Number(v))}
+                    formatter={(value) =>
+                      value == null
+                        ? ['—', '']
+                        : [`${Number(value).toFixed(1)} bpm`, '']
+                    }
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="avg"
+                    name=""
+                    stroke="var(--chart-hr)"
+                    dot={false}
+                  />
+                  {hrZoom.selArea && (
+                    <ReferenceArea
+                      x1={hrZoom.selArea.x1}
+                      x2={hrZoom.selArea.x2}
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      stroke="var(--accent)"
+                      strokeOpacity={0.4}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CollapsibleChartCard>
         </>
       )}
     </div>
@@ -266,7 +339,9 @@ async function loadTs(start: number, end: number) {
     (r) =>
       r.timestamp >= start &&
       r.timestamp <= end &&
-      (r.metricType === 'oxygen' || r.metricType === 'breathing'),
+      (r.metricType === 'oxygen' ||
+        r.metricType === 'breathing' ||
+        r.metricType === 'heart_rate'),
   )
 }
 
