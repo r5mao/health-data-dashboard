@@ -10,7 +10,7 @@ import {
   ZAxis,
 } from 'recharts'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
-import { formatDateTime12 } from '@/time/formatDateTime12'
+import { formatTooltipDateTime } from '@/time/formatDateTime12'
 import { CHART_AXIS_TICK } from '@/charts/chartAxis'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
@@ -51,6 +51,8 @@ export function SleepTimelineChart({
             dataKey="tMid"
             domain={[rangeStart, rangeEnd]}
             allowDataOverflow
+            tickCount={12}
+            minTickGap={6}
             tick={{ ...CHART_AXIS_TICK }}
             tickMargin={10}
             tickFormatter={(v) => formatTimeAxisTick(v as number, spanMs)}
@@ -86,7 +88,7 @@ export function SleepTimelineChart({
                     className="recharts-tooltip-label"
                     style={{ margin: '0 0 4px', color: 'var(--text-h)' }}
                   >
-                    {formatDateTime12(p.startTime)} → {formatDateTime12(p.endTime)}
+                    {formatTooltipDateTime(p.startTime)} → {formatTooltipDateTime(p.endTime)}
                   </p>
                   <p style={{ margin: 0, color: 'var(--text)' }}>
                     Total {p.sleepMinutes} min

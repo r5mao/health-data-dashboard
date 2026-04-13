@@ -1,4 +1,4 @@
-import { formatDateTime12 } from '@/time/formatDateTime12'
+import { formatDateTime12, formatTooltipDateTime } from '@/time/formatDateTime12'
 import { useEffect, useMemo, useState } from 'react'
 import {
   CartesianGrid,
@@ -101,6 +101,8 @@ export function ActivityPage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
+                    tickCount={12}
+                    minTickGap={6}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
@@ -116,7 +118,7 @@ export function ActivityPage({
                     separator=""
                     labelFormatter={(_, payload) => {
                       const t = payload?.[0]?.payload?.t as number | undefined
-                      return t != null ? formatDateTime12(t) : ''
+                      return t != null ? formatTooltipDateTime(t) : ''
                     }}
                     formatter={(value) =>
                       value == null
@@ -173,6 +175,8 @@ export function ActivityPage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
+                    tickCount={12}
+                    minTickGap={6}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
@@ -188,7 +192,7 @@ export function ActivityPage({
                     separator=""
                     labelFormatter={(_, payload) => {
                       const t = payload?.[0]?.payload?.t as number | undefined
-                      return t != null ? formatDateTime12(t) : ''
+                      return t != null ? formatTooltipDateTime(t) : ''
                     }}
                     formatter={(value) =>
                       value == null

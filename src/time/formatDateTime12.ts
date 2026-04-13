@@ -4,3 +4,8 @@ import { format } from 'date-fns'
 export function formatDateTime12(ts: number | Date): string {
   return format(ts, 'MMM d, yyyy, h:mm:ss a')
 }
+
+/** Tooltip/hover datetime: include weekday, drop seconds. */
+export function formatTooltipDateTime(ts: number | Date): string {
+  return format(ts, 'EEE, MMM d, yyyy, h:mm a')
+}

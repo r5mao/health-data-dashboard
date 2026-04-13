@@ -1,4 +1,4 @@
-import { formatDateTime12 } from '@/time/formatDateTime12'
+import { formatTooltipDateTime } from '@/time/formatDateTime12'
 import { useEffect, useState } from 'react'
 import {
   CartesianGrid,
@@ -124,6 +124,8 @@ export function BloodPressurePage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
+                    tickCount={12}
+                    minTickGap={6}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
@@ -139,7 +141,7 @@ export function BloodPressurePage({
                   />
                   <Tooltip
                     separator=""
-                    labelFormatter={(v) => formatDateTime12(v as number)}
+                    labelFormatter={(v) => formatTooltipDateTime(v as number)}
                     formatter={(value) =>
                       value == null
                         ? ['—', '']
@@ -214,6 +216,8 @@ export function BloodPressurePage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
+                    tickCount={12}
+                    minTickGap={6}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
@@ -229,7 +233,7 @@ export function BloodPressurePage({
                   />
                   <Tooltip
                     separator=""
-                    labelFormatter={(v) => formatTimeAxisTick(Number(v), 0)}
+                    labelFormatter={(v) => formatTooltipDateTime(Number(v))}
                     formatter={(value) =>
                       value == null
                         ? ['—', '']

@@ -14,6 +14,7 @@ import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { formatMinutesAsHhMm, toSleepStackRows } from '@/metrics/sleepChartData'
+import { formatTooltipDateTime } from '@/time/formatDateTime12'
 import type { SleepSession } from '@/types/canonical'
 
 function formatYAxisHours(v: number): string {
@@ -40,7 +41,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
   const data = zoom.zoomedData
   const labelCount = data.length
   const bottom = labelCount > 8 ? 88 : labelCount > 4 ? 64 : 48
-  const tickCount = Math.min(12, Math.max(5, labelCount))
+  const tickCount = Math.min(14, Math.max(6, labelCount))
 
   return (
     <CollapsibleChartCard title="Sleep stage time (per session)">
@@ -72,7 +73,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
               dataKey="t"
               domain={['dataMin', 'dataMax']}
               tickCount={tickCount}
-              minTickGap={8}
+              minTickGap={4}
               tick={{
                 ...CHART_AXIS_TICK,
                 fontSize: labelCount > 5 ? 10 : 11,
@@ -97,7 +98,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
             />
             <Tooltip
               separator="     "
-              labelFormatter={(v) => formatTimeAxisTick(Number(v), 0)}
+              labelFormatter={(v) => formatTooltipDateTime(Number(v))}
               formatter={(value, name) => [
                 formatMinutesAsHhMm(Number(value)),
                 String(name),

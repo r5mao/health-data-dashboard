@@ -1,4 +1,4 @@
-import { formatDateTime12 } from '@/time/formatDateTime12'
+import { formatDateTime12, formatTooltipDateTime } from '@/time/formatDateTime12'
 import { useEffect, useMemo, useState } from 'react'
 import {
   CartesianGrid,
@@ -138,6 +138,8 @@ export function RecoveryPage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
+                    tickCount={12}
+                    minTickGap={6}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
@@ -153,7 +155,7 @@ export function RecoveryPage({
                   />
                   <Tooltip
                     separator=""
-                    labelFormatter={(v) => formatTimeAxisTick(Number(v), 0)}
+                    labelFormatter={(v) => formatTooltipDateTime(Number(v))}
                     formatter={(value) =>
                       value == null
                         ? ['—', '']
@@ -207,6 +209,8 @@ export function RecoveryPage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
+                    tickCount={12}
+                    minTickGap={6}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
@@ -221,7 +225,7 @@ export function RecoveryPage({
                   />
                   <Tooltip
                     separator=""
-                    labelFormatter={(v) => formatTimeAxisTick(Number(v), 0)}
+                    labelFormatter={(v) => formatTooltipDateTime(Number(v))}
                     formatter={(value) =>
                       value == null
                         ? ['—', '']
