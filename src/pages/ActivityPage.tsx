@@ -1,6 +1,8 @@
 import { formatDateTime12, formatTooltipDateTime } from '@/time/formatDateTime12'
 import { useEffect, useMemo, useState } from 'react'
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   Legend,
   Line,
@@ -90,10 +92,11 @@ export function ActivityPage({
             )}
             <div className="drag-zoom-chart">
               <ResponsiveContainer width="100%" height={340}>
-                <LineChart
+                <BarChart
                   key={`steps-${chartResetKey}-${stepsData.length}`}
                   data={stepsZoom.zoomedData}
                   margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  barCategoryGap="18%"
                   {...stepsZoom.chartHandlers}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -126,14 +129,7 @@ export function ActivityPage({
                         : [`${Math.round(Number(value))}`, '']
                     }
                   />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="max"
-                    name=""
-                    stroke="var(--chart-steps)"
-                    dot={false}
-                  />
+                  <Bar dataKey="max" name="" fill="var(--chart-steps)" maxBarSize={36} />
                   {stepsZoom.selArea && (
                     <ReferenceArea
                       x1={stepsZoom.selArea.x1}
@@ -145,7 +141,7 @@ export function ActivityPage({
                     />
                   )}
 
-                </LineChart>
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </CollapsibleChartCard>
