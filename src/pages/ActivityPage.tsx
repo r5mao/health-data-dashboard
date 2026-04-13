@@ -15,8 +15,6 @@ import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
-import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
-import { ChartBrush } from '@/components/ChartBrush'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { db } from '@/db/schema'
 import { bucketTimeseries, timeseriesChartGranularity } from '@/metrics/bucketing'
@@ -58,12 +56,7 @@ export function ActivityPage({
   const chartResetKey = `${range.start}-${range.end}-${dataRevision}-${gran}-${ts.length}`
 
   const stepsZoom = useChartDragZoom(stepsData, chartResetKey)
-  const stepsBrush = useBrushTimeSpan(stepsData, chartResetKey)
-  const stepsVisibleMs = stepsZoom.isZoomed ? stepsZoom.visibleSpanMs : stepsBrush.visibleSpanMs
-
   const calsZoom = useChartDragZoom(calsData, chartResetKey)
-  const calsBrush = useBrushTimeSpan(calsData, chartResetKey)
-  const calsVisibleMs = calsZoom.isZoomed ? calsZoom.visibleSpanMs : calsBrush.visibleSpanMs
 
   return (
     <div className="page">
@@ -111,7 +104,7 @@ export function ActivityPage({
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
-                      formatTimeAxisTick(v as number, stepsVisibleMs)
+                      formatTimeAxisTick(v as number, stepsZoom.visibleSpanMs)
                     }
                   />
                   <YAxis
@@ -149,7 +142,7 @@ export function ActivityPage({
                       strokeOpacity={0.4}
                     />
                   )}
-                  {!stepsZoom.isZoomed && <ChartBrush onChange={stepsBrush.onBrushChange} />}
+
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -183,7 +176,7 @@ export function ActivityPage({
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
-                      formatTimeAxisTick(v as number, calsVisibleMs)
+                      formatTimeAxisTick(v as number, calsZoom.visibleSpanMs)
                     }
                   />
                   <YAxis
@@ -221,7 +214,7 @@ export function ActivityPage({
                       strokeOpacity={0.4}
                     />
                   )}
-                  {!calsZoom.isZoomed && <ChartBrush onChange={calsBrush.onBrushChange} />}
+
                 </LineChart>
               </ResponsiveContainer>
             </div>

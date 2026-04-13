@@ -16,8 +16,6 @@ import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
-import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
-import { ChartBrush } from '@/components/ChartBrush'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { db } from '@/db/schema'
 import { bucketBloodPressureDaily } from '@/metrics/bucketing'
@@ -66,8 +64,6 @@ export function BloodPressurePage({
 
   const bpResetKey = `${range.start}-${range.end}-${rows.length}-${dataRevision}`
   const zoom = useChartDragZoom(series, bpResetKey)
-  const brush = useBrushTimeSpan(series, bpResetKey)
-  const visibleSpanMs = zoom.isZoomed ? zoom.visibleSpanMs : brush.visibleSpanMs
 
   const dailyZoom = useChartDragZoom(dailyData, bpResetKey)
 
@@ -131,7 +127,7 @@ export function BloodPressurePage({
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
-                      formatTimeAxisTick(v as number, visibleSpanMs)
+                      formatTimeAxisTick(v as number, zoom.visibleSpanMs)
                     }
                   />
                   <YAxis
@@ -182,7 +178,7 @@ export function BloodPressurePage({
                       strokeOpacity={0.4}
                     />
                   )}
-                  {!zoom.isZoomed && <ChartBrush onChange={brush.onBrushChange} />}
+
                 </LineChart>
               </ResponsiveContainer>
             </div>
