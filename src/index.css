@@ -153,7 +153,8 @@ code {
   fill: var(--text);
 }
 
-.recharts-text.recharts-label {
+/* ReferenceLine labels set their own fill; a blanket .recharts-label rule would override SVG fill. */
+.recharts-layer:not(.recharts-reference-line) .recharts-text.recharts-label {
   fill: var(--text);
 }
 
