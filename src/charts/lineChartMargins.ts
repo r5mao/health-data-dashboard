@@ -9,3 +9,10 @@ export const LINE_CHART_MARGIN_WITH_BRUSH = {
   bottom: 26,
   left: 104,
 } as const
+
+/** Line charts with a compact top-right legend (tabs other than BP use the same rhythm). */
+export const LINE_CHART_MARGIN_WITH_TOP_LEGEND = {
+  ...LINE_CHART_MARGIN_WITH_BRUSH,
+  top: 28,
+  right: 88,
+} as const

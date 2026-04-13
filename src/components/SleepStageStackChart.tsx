@@ -2,7 +2,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ReferenceArea,
   ResponsiveContainer,
   Tooltip,
@@ -11,6 +10,7 @@ import {
 } from 'recharts'
 import type { TooltipContentProps } from 'recharts'
 import { CHART_AXIS_TICK, padTimeDomainForBars } from '@/charts/chartAxis'
+import { ChartLegendTopRight } from '@/charts/chartLegend'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
@@ -99,11 +99,11 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
         </div>
       )}
       <div className="drag-zoom-chart">
-        <ResponsiveContainer width="100%" height={340}>
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart
             key={chartResetKey}
             data={data}
-            margin={{ top: 12, right: 16, left: 56, bottom: bottom + 4 }}
+            margin={{ top: 28, right: 88, left: 56, bottom: bottom + 4 }}
             maxBarSize={48}
             barCategoryGap="18%"
             {...zoom.chartHandlers}
@@ -139,7 +139,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
               }}
             />
             <Tooltip content={SleepStageTooltip} />
-            <Legend />
+            <ChartLegendTopRight />
             <Bar
               dataKey="deep"
               name="Deep"

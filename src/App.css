@@ -735,6 +735,8 @@ details.collapsible-card[open] .collapsible-card-summary::before {
 /* Drag-to-zoom: crosshair cursor on chart area, reset bar */
 .drag-zoom-chart {
   cursor: crosshair;
+  height: clamp(360px, 56vh, 640px);
+  min-height: 320px;
 }
 
 .zoom-reset-bar {

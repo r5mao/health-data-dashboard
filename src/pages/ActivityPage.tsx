@@ -4,7 +4,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ReferenceArea,
@@ -18,8 +17,12 @@ import {
   CHART_Y_AXIS_WIDTH,
   padTimeDomainForBars,
 } from '@/charts/chartAxis'
+import { ChartLegendTopRight } from '@/charts/chartLegend'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
-import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
+import {
+  LINE_CHART_MARGIN_WITH_BRUSH,
+  LINE_CHART_MARGIN_WITH_TOP_LEGEND,
+} from '@/charts/lineChartMargins'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { db } from '@/db/schema'
@@ -136,7 +139,7 @@ export function ActivityPage({
               </div>
             )}
             <div className="drag-zoom-chart">
-              <ResponsiveContainer width="100%" height={340}>
+              <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   key={`steps-${chartResetKey}-${stepsData.length}`}
                   data={stepsPlotData}
@@ -207,11 +210,11 @@ export function ActivityPage({
               </div>
             )}
             <div className="drag-zoom-chart">
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   key={`cals-${chartResetKey}-${calsData.length}`}
                   data={calsPlotData}
-                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  margin={LINE_CHART_MARGIN_WITH_TOP_LEGEND}
                   {...calsZoom.chartHandlers}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -241,14 +244,14 @@ export function ActivityPage({
                     formatter={(value) =>
                       value == null
                         ? ['—', '']
-                        : [`${Number(value).toFixed(1)} bpm`, '']
+                        : [`${Number(value).toFixed(1)} kcal`, '']
                     }
                   />
-                  <Legend />
+                  <ChartLegendTopRight />
                   <Line
                     type="monotone"
                     dataKey="avg"
-                    name=""
+                    name="Calories"
                     stroke="var(--chart-cal)"
                     dot={false}
                   />
@@ -281,11 +284,11 @@ export function ActivityPage({
               </div>
             )}
             <div className="drag-zoom-chart">
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   key={`hr-${chartResetKey}-${hrData.length}`}
                   data={hrPlotData}
-                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  margin={LINE_CHART_MARGIN_WITH_TOP_LEGEND}
                   {...hrZoom.chartHandlers}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -318,11 +321,11 @@ export function ActivityPage({
                         : [`${Number(value).toFixed(1)}`, '']
                     }
                   />
-                  <Legend />
+                  <ChartLegendTopRight />
                   <Line
                     type="monotone"
                     dataKey="avg"
-                    name=""
+                    name="Heart rate"
                     stroke="var(--chart-hr)"
                     dot={false}
                   />

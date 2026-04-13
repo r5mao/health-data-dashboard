@@ -2,7 +2,6 @@ import { formatDateTime12, formatTooltipDateTime } from '@/time/formatDateTime12
 import { useEffect, useMemo, useState } from 'react'
 import {
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ReferenceArea,
@@ -12,8 +11,9 @@ import {
   YAxis,
 } from 'recharts'
 import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
+import { ChartLegendTopRight } from '@/charts/chartLegend'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
-import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
+import { LINE_CHART_MARGIN_WITH_TOP_LEGEND } from '@/charts/lineChartMargins'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { SleepStageStackChart } from '@/components/SleepStageStackChart'
@@ -157,10 +157,10 @@ export function RecoveryPage({
               </div>
             )}
             <div className="drag-zoom-chart">
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={o2PlotData}
-                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  margin={LINE_CHART_MARGIN_WITH_TOP_LEGEND}
                   {...o2Zoom.chartHandlers}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -192,11 +192,11 @@ export function RecoveryPage({
                         : [`${Number(value).toFixed(1)}%`, '']
                     }
                   />
-                  <Legend />
+                  <ChartLegendTopRight />
                   <Line
                     type="monotone"
                     dataKey="avg"
-                    name=""
+                    name="SpO₂"
                     stroke="var(--chart-o2)"
                     dot={false}
                   />
@@ -228,10 +228,10 @@ export function RecoveryPage({
               </div>
             )}
             <div className="drag-zoom-chart">
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={brPlotData}
-                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  margin={LINE_CHART_MARGIN_WITH_TOP_LEGEND}
                   {...brZoom.chartHandlers}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -262,11 +262,11 @@ export function RecoveryPage({
                         : [`${Number(value).toFixed(1)} / min`, '']
                     }
                   />
-                  <Legend />
+                  <ChartLegendTopRight />
                   <Line
                     type="monotone"
                     dataKey="avg"
-                    name=""
+                    name="Breathing"
                     stroke="var(--chart-br)"
                     dot={false}
                   />
@@ -298,10 +298,10 @@ export function RecoveryPage({
               </div>
             )}
             <div className="drag-zoom-chart">
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={hrPlotData}
-                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  margin={LINE_CHART_MARGIN_WITH_TOP_LEGEND}
                   {...hrZoom.chartHandlers}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -332,11 +332,11 @@ export function RecoveryPage({
                         : [`${Number(value).toFixed(1)} bpm`, '']
                     }
                   />
-                  <Legend />
+                  <ChartLegendTopRight />
                   <Line
                     type="monotone"
                     dataKey="avg"
-                    name=""
+                    name="Heart rate"
                     stroke="var(--chart-hr)"
                     dot={false}
                   />
