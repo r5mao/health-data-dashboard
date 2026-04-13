@@ -19,7 +19,10 @@ import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { db } from '@/db/schema'
-import { bucketTimeseries, timeseriesChartGranularity } from '@/metrics/bucketing'
+import {
+  bucketTimeseriesAdaptive,
+  timeseriesChartGranularityFromMs,
+} from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
 
 export function ActivityPage({
@@ -40,31 +43,58 @@ export function ActivityPage({
     )
   }, [range.start, range.end, dataRevision])
 
-  const spanDays = (range.end - range.start) / 86400000
-  const gran = timeseriesChartGranularity(spanDays)
-
+  const baseGran = timeseriesChartGranularityFromMs(range.end - range.start)
   const steps = useMemo(
-    () => bucketTimeseries(ts, range.start, range.end, gran, 'steps'),
-    [ts, range.start, range.end, gran],
+    () => bucketTimeseriesAdaptive(ts, range.start, range.end, 'steps'),
+    [ts, range.start, range.end],
   )
   const cals = useMemo(
-    () => bucketTimeseries(ts, range.start, range.end, gran, 'calories'),
-    [ts, range.start, range.end, gran],
+    () => bucketTimeseriesAdaptive(ts, range.start, range.end, 'calories'),
+    [ts, range.start, range.end],
   )
   const hr = useMemo(
-    () => bucketTimeseries(ts, range.start, range.end, gran, 'heart_rate'),
-    [ts, range.start, range.end, gran],
+    () => bucketTimeseriesAdaptive(ts, range.start, range.end, 'heart_rate'),
+    [ts, range.start, range.end],
   )
 
   const stepsData = useMemo(() => steps.filter((d) => d.count > 0), [steps])
   const calsData = useMemo(() => cals.filter((d) => d.count > 0), [cals])
   const hrData = useMemo(() => hr.filter((d) => d.count > 0), [hr])
 
-  const chartResetKey = `${range.start}-${range.end}-${dataRevision}-${gran}-${ts.length}`
+  const chartResetKey = `${range.start}-${range.end}-${dataRevision}-${baseGran}-${ts.length}`
 
   const stepsZoom = useChartDragZoom(stepsData, chartResetKey)
   const calsZoom = useChartDragZoom(calsData, chartResetKey)
   const hrZoom = useChartDragZoom(hrData, chartResetKey)
+  const stepsPlotData = useMemo(
+    () =>
+      bucketTimeseriesAdaptive(ts, range.start, range.end, 'steps', stepsZoom.zoomDomain).filter(
+        (d) => d.count > 0,
+      ),
+    [ts, range.start, range.end, stepsZoom.zoomDomain],
+  )
+  const calsPlotData = useMemo(
+    () =>
+      bucketTimeseriesAdaptive(
+        ts,
+        range.start,
+        range.end,
+        'calories',
+        calsZoom.zoomDomain,
+      ).filter((d) => d.count > 0),
+    [ts, range.start, range.end, calsZoom.zoomDomain],
+  )
+  const hrPlotData = useMemo(
+    () =>
+      bucketTimeseriesAdaptive(
+        ts,
+        range.start,
+        range.end,
+        'heart_rate',
+        hrZoom.zoomDomain,
+      ).filter((d) => d.count > 0),
+    [ts, range.start, range.end, hrZoom.zoomDomain],
+  )
 
   return (
     <div className="page">
@@ -100,7 +130,7 @@ export function ActivityPage({
               <ResponsiveContainer width="100%" height={340}>
                 <BarChart
                   key={`steps-${chartResetKey}-${stepsData.length}`}
-                  data={stepsZoom.zoomedData}
+                  data={stepsPlotData}
                   margin={LINE_CHART_MARGIN_WITH_BRUSH}
                   barCategoryGap="18%"
                   {...stepsZoom.chartHandlers}
@@ -168,7 +198,7 @@ export function ActivityPage({
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart
                   key={`cals-${chartResetKey}-${calsData.length}`}
-                  data={calsZoom.zoomedData}
+                  data={calsPlotData}
                   margin={LINE_CHART_MARGIN_WITH_BRUSH}
                   {...calsZoom.chartHandlers}
                 >
@@ -242,7 +272,7 @@ export function ActivityPage({
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart
                   key={`hr-${chartResetKey}-${hrData.length}`}
-                  data={hrZoom.zoomedData}
+                  data={hrPlotData}
                   margin={LINE_CHART_MARGIN_WITH_BRUSH}
                   {...hrZoom.chartHandlers}
                 >

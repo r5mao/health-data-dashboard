@@ -3,6 +3,7 @@ import type { TimeseriesRow } from '@/types/canonical'
 import type { MetricType } from '@/types/metric'
 
 export type Granularity = 'hour' | 'day' | 'week' | 'month'
+const DAY_MS = 86400000
 
 /** Hourly buckets when selected range is at most this many days (see `timeseriesChartGranularity`). */
 export const HOURLY_BUCKET_MAX_SPAN_DAYS = 7
@@ -12,6 +13,11 @@ export function timeseriesChartGranularity(spanDays: number): Granularity {
   if (spanDays <= 60) return 'day'
   if (spanDays <= 400) return 'week'
   return 'month'
+}
+
+export function timeseriesChartGranularityFromMs(spanMs: number): Granularity {
+  const spanDays = Math.max(0, spanMs) / DAY_MS
+  return timeseriesChartGranularity(spanDays)
 }
 
 export type BucketPoint = {
@@ -100,6 +106,20 @@ export function bucketTimeseries(
       }
     })
   return out
+}
+
+export function bucketTimeseriesAdaptive(
+  samples: TimeseriesRow[],
+  fullRangeStart: number,
+  fullRangeEnd: number,
+  metric: MetricType,
+  zoomDomain?: [number, number] | null,
+): BucketPoint[] {
+  const start = zoomDomain ? Math.min(zoomDomain[0], zoomDomain[1]) : fullRangeStart
+  const end = zoomDomain ? Math.max(zoomDomain[0], zoomDomain[1]) : fullRangeEnd
+  if (end < start) return []
+  const granularity = timeseriesChartGranularityFromMs(end - start)
+  return bucketTimeseries(samples, start, end, granularity, metric)
 }
 
 export function bucketBloodPressureDaily(

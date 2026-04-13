@@ -19,7 +19,10 @@ import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { SleepStageStackChart } from '@/components/SleepStageStackChart'
 import { SleepTimelineChart } from '@/components/SleepTimelineChart'
 import { db } from '@/db/schema'
-import { bucketTimeseries, timeseriesChartGranularity } from '@/metrics/bucketing'
+import {
+  bucketTimeseriesAdaptive,
+  timeseriesChartGranularityFromMs,
+} from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
 
 export function RecoveryPage({
@@ -40,12 +43,11 @@ export function RecoveryPage({
     )
   }, [range.start, range.end, dataRevision])
 
-  const spanDays = (range.end - range.start) / 86400000
-  const gran = timeseriesChartGranularity(spanDays)
+  const baseGran = timeseriesChartGranularityFromMs(range.end - range.start)
 
-  const o2 = bucketTimeseries(ts, range.start, range.end, gran, 'oxygen')
-  const br = bucketTimeseries(ts, range.start, range.end, gran, 'breathing')
-  const hr = bucketTimeseries(ts, range.start, range.end, gran, 'heart_rate')
+  const o2 = bucketTimeseriesAdaptive(ts, range.start, range.end, 'oxygen')
+  const br = bucketTimeseriesAdaptive(ts, range.start, range.end, 'breathing')
+  const hr = bucketTimeseriesAdaptive(ts, range.start, range.end, 'heart_rate')
 
   const o2Data = useMemo(() => o2.filter((d) => d.count > 0), [o2])
   const brData = useMemo(() => br.filter((d) => d.count > 0), [br])
@@ -55,11 +57,36 @@ export function RecoveryPage({
     () => `${range.start}-${range.end}-${dataRevision}-${sleep.length}`,
     [range.start, range.end, dataRevision, sleep.length],
   )
-  const chartResetKey = `${range.start}-${range.end}-${dataRevision}-${gran}-${ts.length}`
+  const chartResetKey = `${range.start}-${range.end}-${dataRevision}-${baseGran}-${ts.length}`
 
   const o2Zoom = useChartDragZoom(o2Data, chartResetKey)
   const brZoom = useChartDragZoom(brData, chartResetKey)
   const hrZoom = useChartDragZoom(hrData, chartResetKey)
+  const o2PlotData = useMemo(
+    () =>
+      bucketTimeseriesAdaptive(ts, range.start, range.end, 'oxygen', o2Zoom.zoomDomain).filter(
+        (d) => d.count > 0,
+      ),
+    [ts, range.start, range.end, o2Zoom.zoomDomain],
+  )
+  const brPlotData = useMemo(
+    () =>
+      bucketTimeseriesAdaptive(ts, range.start, range.end, 'breathing', brZoom.zoomDomain).filter(
+        (d) => d.count > 0,
+      ),
+    [ts, range.start, range.end, brZoom.zoomDomain],
+  )
+  const hrPlotData = useMemo(
+    () =>
+      bucketTimeseriesAdaptive(
+        ts,
+        range.start,
+        range.end,
+        'heart_rate',
+        hrZoom.zoomDomain,
+      ).filter((d) => d.count > 0),
+    [ts, range.start, range.end, hrZoom.zoomDomain],
+  )
 
   return (
     <div className="page">
@@ -132,7 +159,7 @@ export function RecoveryPage({
             <div className="drag-zoom-chart">
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart
-                  data={o2Zoom.zoomedData}
+                  data={o2PlotData}
                   margin={LINE_CHART_MARGIN_WITH_BRUSH}
                   {...o2Zoom.chartHandlers}
                 >
@@ -203,7 +230,7 @@ export function RecoveryPage({
             <div className="drag-zoom-chart">
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart
-                  data={brZoom.zoomedData}
+                  data={brPlotData}
                   margin={LINE_CHART_MARGIN_WITH_BRUSH}
                   {...brZoom.chartHandlers}
                 >
@@ -273,7 +300,7 @@ export function RecoveryPage({
             <div className="drag-zoom-chart">
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart
-                  data={hrZoom.zoomedData}
+                  data={hrPlotData}
                   margin={LINE_CHART_MARGIN_WITH_BRUSH}
                   {...hrZoom.chartHandlers}
                 >

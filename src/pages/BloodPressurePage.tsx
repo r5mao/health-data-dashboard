@@ -20,8 +20,8 @@ import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { db } from '@/db/schema'
 import {
   bucketBloodPressureDaily,
-  bucketTimeseries,
-  timeseriesChartGranularity,
+  bucketTimeseriesAdaptive,
+  timeseriesChartGranularityFromMs,
 } from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
 
@@ -68,17 +68,16 @@ export function BloodPressurePage({
       })
   }, [range.start, range.end, dataRevision])
 
-  const spanDays = (range.end - range.start) / 86400000
-  const gran = timeseriesChartGranularity(spanDays)
+  const baseGran = timeseriesChartGranularityFromMs(range.end - range.start)
   const daily = bucketBloodPressureDaily(rows, range.start, range.end)
   const dailyData = daily.filter((d) => d.n > 0)
   const hr = useMemo(
-    () => bucketTimeseries(hrRows, range.start, range.end, gran, 'heart_rate'),
-    [hrRows, range.start, range.end, gran],
+    () => bucketTimeseriesAdaptive(hrRows, range.start, range.end, 'heart_rate'),
+    [hrRows, range.start, range.end],
   )
   const pressure = useMemo(
-    () => bucketTimeseries(pressureRows, range.start, range.end, gran, 'pressure'),
-    [pressureRows, range.start, range.end, gran],
+    () => bucketTimeseriesAdaptive(pressureRows, range.start, range.end, 'pressure'),
+    [pressureRows, range.start, range.end],
   )
   const hrData = useMemo(() => hr.filter((d) => d.count > 0), [hr])
   const pressureData = useMemo(() => pressure.filter((d) => d.count > 0), [pressure])
@@ -88,12 +87,34 @@ export function BloodPressurePage({
     dia: r.diastolic,
   }))
 
-  const bpResetKey = `${range.start}-${range.end}-${rows.length}-${hrData.length}-${pressureData.length}-${dataRevision}`
+  const bpResetKey = `${range.start}-${range.end}-${rows.length}-${hrData.length}-${pressureData.length}-${baseGran}-${dataRevision}`
   const zoom = useChartDragZoom(series, bpResetKey)
 
   const dailyZoom = useChartDragZoom(dailyData, bpResetKey)
   const hrZoom = useChartDragZoom(hrData, bpResetKey)
   const pressureZoom = useChartDragZoom(pressureData, bpResetKey)
+  const hrPlotData = useMemo(
+    () =>
+      bucketTimeseriesAdaptive(
+        hrRows,
+        range.start,
+        range.end,
+        'heart_rate',
+        hrZoom.zoomDomain,
+      ).filter((d) => d.count > 0),
+    [hrRows, range.start, range.end, hrZoom.zoomDomain],
+  )
+  const pressurePlotData = useMemo(
+    () =>
+      bucketTimeseriesAdaptive(
+        pressureRows,
+        range.start,
+        range.end,
+        'pressure',
+        pressureZoom.zoomDomain,
+      ).filter((d) => d.count > 0),
+    [pressureRows, range.start, range.end, pressureZoom.zoomDomain],
+  )
 
   const bpChartMargin = {
     ...LINE_CHART_MARGIN_WITH_BRUSH,
@@ -326,7 +347,7 @@ export function BloodPressurePage({
                 <ResponsiveContainer width="100%" height={320}>
                   <LineChart
                     key={`bp-hr-${bpResetKey}-${hrData.length}`}
-                    data={hrZoom.zoomedData}
+                    data={hrPlotData}
                     margin={LINE_CHART_MARGIN_WITH_BRUSH}
                     {...hrZoom.chartHandlers}
                   >
@@ -403,7 +424,7 @@ export function BloodPressurePage({
                 <ResponsiveContainer width="100%" height={320}>
                   <LineChart
                     key={`bp-pressure-${bpResetKey}-${pressureData.length}`}
-                    data={pressureZoom.zoomedData}
+                    data={pressurePlotData}
                     margin={LINE_CHART_MARGIN_WITH_BRUSH}
                     {...pressureZoom.chartHandlers}
                   >
