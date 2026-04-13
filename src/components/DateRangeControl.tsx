@@ -5,8 +5,8 @@ const presets: { id: PresetId; label: string }[] = [
   { id: '2d', label: '2d' },
   { id: '7d', label: '7d' },
   { id: '30d', label: '30d' },
+  { id: '60d', label: '60d' },
   { id: '90d', label: '90d' },
-  { id: 'month', label: 'Month' },
   { id: 'year', label: 'Year' },
   { id: 'all', label: 'All' },
 ]

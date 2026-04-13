@@ -4,8 +4,8 @@ export type PresetId =
   | '2d'
   | '7d'
   | '30d'
+  | '60d'
   | '90d'
-  | 'month'
   | 'year'
   | 'all'
 

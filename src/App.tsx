@@ -74,7 +74,7 @@ export default function App() {
           />
         </nav>
 
-        {tab !== 'import' && (
+        {(tab === 'bp' || tab === 'activity' || tab === 'recovery') && (
           <div className="toolbar toolbar-card">
             <DateRangeControl />
           </div>

@@ -4,15 +4,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {
-  endOfDay,
-  endOfMonth,
-  endOfYear,
-  startOfDay,
-  startOfMonth,
-  startOfYear,
-  subDays,
-} from 'date-fns'
+import { endOfDay, endOfYear, startOfDay, startOfYear, subDays } from 'date-fns'
 import { getDataTimeExtent } from '@/db/repository'
 import { DateRangeContext } from '@/time/dateRangeContextBase'
 import type { DateRangeValue, PresetId } from '@/time/dateRangeTypes'
@@ -107,16 +99,16 @@ export function DateRangeProvider({
             end,
           }
           break
+        case '60d':
+          next = {
+            start: startOfDay(subDays(end, 59)).getTime(),
+            end,
+          }
+          break
         case '90d':
           next = {
             start: startOfDay(subDays(end, 89)).getTime(),
             end,
-          }
-          break
-        case 'month':
-          next = {
-            start: startOfMonth(end).getTime(),
-            end: endOfMonth(end).getTime(),
           }
           break
         case 'year':
