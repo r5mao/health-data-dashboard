@@ -1,9 +1,28 @@
-import { formatDateTime12 } from '@/time/formatDateTime12'
+import { format, isSameDay, isSameYear } from 'date-fns'
 import { useEffect, useState } from 'react'
 import { db } from '@/db/schema'
+import { formatDateTime12 } from '@/time/formatDateTime12'
+import type { ImportMetaRecord } from '@/types/canonical'
+
+function formatDateRange(min: number | null | undefined, max: number | null | undefined): string {
+  if (min == null && max == null) return '—'
+  if (min == null) return format(max!, 'MMM d, yyyy')
+  if (max == null) return format(min, 'MMM d, yyyy')
+
+  const a = new Date(min)
+  const b = new Date(max)
+
+  if (isSameDay(a, b)) return format(a, 'MMM d, yyyy')
+  if (isSameYear(a, b)) return `${format(a, 'MMM d')} – ${format(b, 'MMM d, yyyy')}`
+  return `${format(a, 'MMM d, yyyy')} – ${format(b, 'MMM d, yyyy')}`
+}
+
+function totalRows(rc: ImportMetaRecord['rowCounts']): number {
+  return rc.timeseries + rc.bloodPressure + rc.sleep + rc.sport + rc.weight
+}
 
 export function RecordsPage({ dataRevision }: { dataRevision: number }) {
-  const [meta, setMeta] = useState<Awaited<ReturnType<typeof loadMeta>>>([])
+  const [meta, setMeta] = useState<ImportMetaRecord[]>([])
 
   useEffect(() => {
     void loadMeta().then(setMeta)
@@ -13,8 +32,8 @@ export function RecordsPage({ dataRevision }: { dataRevision: number }) {
     <div className="page">
       <h2>Import</h2>
       <p className="muted">
-        Row counts per source file. Preamble lines with personal identifiers are not
-        stored.
+        Previously imported files. Preamble lines with personal identifiers are
+        not stored.
       </p>
       {meta.length === 0 ? (
         <p className="muted">No imports yet.</p>
@@ -23,25 +42,21 @@ export function RecordsPage({ dataRevision }: { dataRevision: number }) {
           <table className="data-table">
             <thead>
               <tr>
-                <th>File</th>
-                <th>Imported</th>
-                <th>Timeseries</th>
-                <th>BP</th>
-                <th>Sleep</th>
-                <th>Sport</th>
-                <th>Weight</th>
+                <th>File Name</th>
+                <th>Date Range</th>
+                <th>Data Type</th>
+                <th>Data Count</th>
+                <th>Imported At</th>
               </tr>
             </thead>
             <tbody>
               {meta.map((m) => (
                 <tr key={m.sourceFile}>
                   <td>{m.sourceFile}</td>
+                  <td>{formatDateRange(m.dateMin, m.dateMax)}</td>
+                  <td>{m.dataType ?? '—'}</td>
+                  <td>{totalRows(m.rowCounts).toLocaleString()}</td>
                   <td>{formatDateTime12(m.importedAt)}</td>
-                  <td>{m.rowCounts.timeseries}</td>
-                  <td>{m.rowCounts.bloodPressure}</td>
-                  <td>{m.rowCounts.sleep}</td>
-                  <td>{m.rowCounts.sport}</td>
-                  <td>{m.rowCounts.weight}</td>
                 </tr>
               ))}
             </tbody>
@@ -52,7 +67,7 @@ export function RecordsPage({ dataRevision }: { dataRevision: number }) {
   )
 }
 
-async function loadMeta() {
+async function loadMeta(): Promise<ImportMetaRecord[]> {
   const rows = await db.importMeta.toArray()
   return rows.sort((a, b) => b.importedAt - a.importedAt)
 }

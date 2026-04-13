@@ -6,40 +6,86 @@ type Props = {
   onImported: () => void
 }
 
+type BannerState =
+  | { kind: 'success' | 'error'; message: string }
+  | null
+
 export function ImportPanel({ onImported }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const clearDialogRef = useRef<HTMLDialogElement>(null)
-  const [status, setStatus] = useState<string | null>(null)
+  const [banner, setBanner] = useState<BannerState>(null)
 
   async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files?.length) return
-    setStatus('Importing…')
-    const lines: string[] = []
-    for (const f of Array.from(files)) {
-      const r = await importCsvFile(f)
-      if (r.ok) {
-        lines.push(
-          `${r.sourceFile}: ${r.rowCounts.timeseries + r.rowCounts.bloodPressure + r.rowCounts.sleep + r.rowCounts.sport + r.rowCounts.weight} rows`,
-        )
-      } else {
-        lines.push(`${r.sourceFile}: ${r.error}`)
+
+    let importedCount = 0
+    let failedCount = 0
+    let touchedData = false
+
+    for (const file of Array.from(files)) {
+      try {
+        const result = await importCsvFile(file)
+        if (result.ok) {
+          importedCount += 1
+          touchedData = true
+        } else {
+          failedCount += 1
+        }
+      } catch {
+        failedCount += 1
       }
     }
-    setStatus(lines.join('\n'))
-    onImported()
+
+    if (touchedData) onImported()
+
+    if (failedCount === 0) {
+      setBanner({
+        kind: 'success',
+        message: `Imported ${importedCount} file${importedCount === 1 ? '' : 's'} successfully.`,
+      })
+    } else {
+      setBanner({
+        kind: 'error',
+        message:
+          importedCount > 0
+            ? `Imported ${importedCount} file${importedCount === 1 ? '' : 's'}; ${failedCount} file${failedCount === 1 ? '' : 's'} failed.`
+            : `Import failed for ${failedCount} file${failedCount === 1 ? '' : 's'}.`,
+      })
+    }
     e.target.value = ''
   }
 
   async function confirmClearAll() {
     clearDialogRef.current?.close()
-    await clearAllData()
-    onImported()
-    setStatus('All data cleared.')
+    try {
+      await clearAllData()
+      onImported()
+      setBanner({ kind: 'success', message: 'All data cleared.' })
+    } catch {
+      setBanner({ kind: 'error', message: 'Failed to clear data.' })
+    }
   }
 
   return (
     <div className="import-shell">
+      {banner && (
+        <div
+          className={`import-banner ${banner.kind === 'success' ? 'success' : 'error'}`}
+          role="status"
+          aria-live="polite"
+        >
+          <span>{banner.message}</span>
+          <button
+            type="button"
+            className="import-banner-close"
+            aria-label="Dismiss import status"
+            onClick={() => setBanner(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
       <div className="import-panel">
         <input
           ref={inputRef}
@@ -64,7 +110,6 @@ export function ImportPanel({ onImported }: Props) {
           Clear all
         </button>
       </div>
-      {status && <pre className="import-status">{status}</pre>}
 
       <dialog
         ref={clearDialogRef}

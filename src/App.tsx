@@ -33,9 +33,6 @@ export default function App() {
           </div>
           <div className="header-actions">
             <ThemeControl />
-            <ImportPanel
-              onImported={() => setDataRevision((n) => n + 1)}
-            />
           </div>
         </header>
 
@@ -88,7 +85,14 @@ export default function App() {
           {tab === 'bp' && <BloodPressurePage dataRevision={dataRevision} />}
           {tab === 'activity' && <ActivityPage dataRevision={dataRevision} />}
           {tab === 'recovery' && <RecoveryPage dataRevision={dataRevision} />}
-          {tab === 'import' && <RecordsPage dataRevision={dataRevision} />}
+          {tab === 'import' && (
+            <>
+              <div className="toolbar toolbar-card">
+                <ImportPanel onImported={() => setDataRevision((n) => n + 1)} />
+              </div>
+              <RecordsPage dataRevision={dataRevision} />
+            </>
+          )}
         </main>
       </div>
     </DateRangeProvider>

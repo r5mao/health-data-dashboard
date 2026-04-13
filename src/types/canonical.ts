@@ -70,6 +70,9 @@ export type ImportMetaRecord = {
   sourceFile: string
   source: DataSourcePlatform
   importedAt: number
+  dataType: string
+  dateMin: number | null
+  dateMax: number | null
   rowCounts: {
     timeseries: number
     bloodPressure: number

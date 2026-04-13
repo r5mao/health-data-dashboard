@@ -1,6 +1,39 @@
 import { db } from '@/db/schema'
 import type { ImportBundle } from '@/import/sources/bpDoctorFit/importBundle'
-import type { DataSourcePlatform } from '@/types/metric'
+import type { MetricType, DataSourcePlatform } from '@/types/metric'
+
+const METRIC_LABELS: Record<MetricType, string> = {
+  heart_rate: 'Heart rate',
+  calories: 'Calories',
+  steps: 'Steps',
+  pressure: 'Pressure index',
+  oxygen: 'Blood oxygen',
+  breathing: 'Breathing rate',
+  hrv: 'HRV',
+}
+
+function deriveDataType(bundle: ImportBundle): string {
+  if (bundle.bloodPressure.length) return 'Blood pressure'
+  if (bundle.sleep.length) return 'Sleep'
+  if (bundle.sport.length) return 'Sport'
+  if (bundle.weight.length) return 'Weight'
+  if (bundle.timeseries.length) {
+    const mt = bundle.timeseries[0].metricType
+    return METRIC_LABELS[mt] ?? mt
+  }
+  return '—'
+}
+
+function bundleDateExtent(bundle: ImportBundle): { dateMin: number | null; dateMax: number | null } {
+  const ts: number[] = []
+  for (const r of bundle.timeseries) ts.push(r.timestamp)
+  for (const r of bundle.bloodPressure) ts.push(r.timestamp)
+  for (const r of bundle.sleep) { ts.push(r.startTime); ts.push(r.endTime) }
+  for (const r of bundle.sport) ts.push(r.measurementTime)
+  for (const r of bundle.weight) ts.push(r.timestamp)
+  if (ts.length === 0) return { dateMin: null, dateMax: null }
+  return { dateMin: Math.min(...ts), dateMax: Math.max(...ts) }
+}
 
 /** Remove all rows previously imported from this file (re-import replaces). */
 export async function deleteBySourceFile(sourceFile: string): Promise<void> {
@@ -64,10 +97,14 @@ export async function persistImportBundle(
       if (bundle.weight.length) {
         await db.weightMeasurements.bulkAdd(bundle.weight)
       }
+      const { dateMin, dateMax } = bundleDateExtent(bundle)
       await db.importMeta.put({
         sourceFile,
         source,
         importedAt: Date.now(),
+        dataType: deriveDataType(bundle),
+        dateMin,
+        dateMax,
         rowCounts,
       })
     },
