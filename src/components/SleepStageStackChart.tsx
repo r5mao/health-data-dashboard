@@ -9,14 +9,53 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import type { TooltipContentProps } from 'recharts'
 import { CHART_AXIS_TICK, padTimeDomainForBars } from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
-import { formatMinutesAsHhMm, toSleepStackRows } from '@/metrics/sleepChartData'
+import {
+  formatMinutesAsHhMm,
+  toSleepStackRows,
+  type SleepStackRow,
+} from '@/metrics/sleepChartData'
 import { useMemo } from 'react'
 import { formatTooltipDateTime } from '@/time/formatDateTime12'
 import type { SleepSession } from '@/types/canonical'
+
+function SleepStageTooltip({ active, payload }: TooltipContentProps) {
+  if (!active || !payload?.length) return null
+  const row = payload[0].payload as SleepStackRow
+  return (
+    <div className="recharts-default-tooltip">
+      <p
+        className="recharts-tooltip-label"
+        style={{ marginBottom: 6, lineHeight: 1.45 }}
+      >
+        Start: {formatTooltipDateTime(row.startTime)}
+        <br />
+        End: {formatTooltipDateTime(row.endTime)}
+      </p>
+      <ul
+        className="recharts-tooltip-item-list"
+        style={{ padding: 0, margin: 0, listStyle: 'none' }}
+      >
+        {payload.map((entry, i) => (
+          <li
+            key={i}
+            className="recharts-tooltip-item"
+            style={{ color: entry.color, paddingTop: i === 0 ? 0 : 2 }}
+          >
+            <span className="recharts-tooltip-item-name">{String(entry.name)}: </span>
+            <span className="recharts-tooltip-item-value">
+              {formatMinutesAsHhMm(Number(entry.value))}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 function formatYAxisHours(v: number): string {
   const m = Number(v)
@@ -99,16 +138,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
                 style: { fill: 'var(--text)' },
               }}
             />
-            <Tooltip
-              separator="     "
-              labelFormatter={(v) => formatTooltipDateTime(Number(v))}
-              formatter={(value, name) => [
-                formatMinutesAsHhMm(Number(value)),
-                String(name),
-              ]}
-              labelStyle={{ color: 'var(--text-h)' }}
-              itemStyle={{ paddingTop: 2, paddingBottom: 2 }}
-            />
+            <Tooltip content={SleepStageTooltip} />
             <Legend />
             <Bar
               dataKey="deep"
