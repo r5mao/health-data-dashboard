@@ -7,41 +7,58 @@ export const BP_STAGE2_DIASTOLIC = 90
 export const BP_SEVERE_SYSTOLIC = 180
 export const BP_SEVERE_DIASTOLIC = 120
 
-const DOTTED = '4 4'
-const LINE_W = 1.5
+/** Softer than data lines; longer gaps reduce visual noise. */
+const DOTTED = '2 7'
+const STROKE_W = 1
+const REF_Z = 60
 
-const lineCommon = {
-  strokeWidth: LINE_W,
+const lineBase = {
+  strokeWidth: STROKE_W,
   strokeDasharray: DOTTED,
-  /** Keep lines when Y domain is auto and a threshold sits at/near the edge. */
+  strokeOpacity: 0.5,
   ifOverflow: 'visible' as const,
+  zIndex: REF_Z,
+}
+
+function refLabel(text: string) {
+  return {
+    value: text,
+    position: 'right' as const,
+    fill: 'var(--bp-ref-label)',
+    fontSize: 10,
+    fontWeight: 500,
+  }
 }
 
 /**
- * Horizontal dotted threshold lines: Stage 2 (purple 140, blue 90) and severe (darker hues 180, 120).
+ * Horizontal dotted thresholds (behind data lines). Labels on the right identify stage vs severe and measurement.
  */
 export function BpThresholdReferenceLines() {
   return (
     <>
       <ReferenceLine
+        {...lineBase}
         y={BP_STAGE2_DIASTOLIC}
-        stroke="var(--bp-ref-dia-stage2)"
-        {...lineCommon}
+        stroke="var(--bp-ref-line-dia-stage2)"
+        label={refLabel('Stage 2 · diastolic')}
       />
       <ReferenceLine
+        {...lineBase}
         y={BP_STAGE2_SYSTOLIC}
-        stroke="var(--bp-ref-sys-stage2)"
-        {...lineCommon}
+        stroke="var(--bp-ref-line-sys-stage2)"
+        label={refLabel('Stage 2 · systolic')}
       />
       <ReferenceLine
+        {...lineBase}
         y={BP_SEVERE_DIASTOLIC}
-        stroke="var(--bp-ref-dia-severe)"
-        {...lineCommon}
+        stroke="var(--bp-ref-line-dia-severe)"
+        label={refLabel('Severe · diastolic')}
       />
       <ReferenceLine
+        {...lineBase}
         y={BP_SEVERE_SYSTOLIC}
-        stroke="var(--bp-ref-sys-severe)"
-        {...lineCommon}
+        stroke="var(--bp-ref-line-sys-severe)"
+        label={refLabel('Severe · systolic')}
       />
     </>
   )

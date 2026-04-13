@@ -69,6 +69,7 @@ export function BloodPressurePage({
     ...LINE_CHART_MARGIN_WITH_BRUSH,
     top: 18,
     bottom: 72,
+    right: 168,
   } as const
 
   return (
@@ -83,10 +84,9 @@ export function BloodPressurePage({
           About the threshold lines
         </summary>
         <p className="muted page-details-body">
-          Dotted lines mark common reference levels on the shared mmHg axis.
-          Stage 2: blue at 90 (diastolic), purple at 140 (systolic). Severe:
-          darker blue at 120 (diastolic), darker purple at 180 (systolic). Not
-          medical advice—use your clinician’s targets.
+          Faint dotted lines mark common reference levels; labels on the right
+          of the chart name each line (Stage 2 vs severe, diastolic vs
+          systolic). Not medical advice—use your clinician’s targets.
         </p>
       </details>
       {rows.length === 0 ? (
@@ -137,16 +137,20 @@ export function BloodPressurePage({
                   dataKey="sys"
                   name="Systolic"
                   stroke="var(--chart-sys)"
+                  strokeWidth={2}
                   dot={{ r: 3 }}
                   isAnimationActive={false}
+                  zIndex={500}
                 />
                 <Line
                   type="monotone"
                   dataKey="dia"
                   name="Diastolic"
                   stroke="var(--chart-dia)"
+                  strokeWidth={2}
                   dot={{ r: 3 }}
                   isAnimationActive={false}
+                  zIndex={500}
                 />
                 <ChartBrush onChange={onBrushChange} />
               </LineChart>
@@ -156,7 +160,12 @@ export function BloodPressurePage({
             <ResponsiveContainer width="100%" height={280}>
               <LineChart
                 data={daily.filter((d) => d.n > 0)}
-                margin={{ top: 14, right: 18, bottom: 58, left: CHART_Y_AXIS_WIDTH + 12 }}
+                margin={{
+                  top: 14,
+                  right: 148,
+                  bottom: 58,
+                  left: CHART_Y_AXIS_WIDTH + 12,
+                }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <BpThresholdReferenceLines />
@@ -188,14 +197,18 @@ export function BloodPressurePage({
                   dataKey="sysAvg"
                   name="Systolic"
                   stroke="var(--chart-sys)"
+                  strokeWidth={2}
                   dot={false}
+                  zIndex={500}
                 />
                 <Line
                   type="monotone"
                   dataKey="diaAvg"
                   name="Diastolic"
                   stroke="var(--chart-dia)"
+                  strokeWidth={2}
                   dot={false}
+                  zIndex={500}
                 />
               </LineChart>
             </ResponsiveContainer>

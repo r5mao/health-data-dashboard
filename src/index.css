@@ -33,11 +33,12 @@
   --chart-sleep-light: #0ea5e9;
   --chart-sleep-awake: #ea580c;
 
-  /* BP threshold lines: Stage 2 match series colors; severe = darker for contrast */
-  --bp-ref-dia-stage2: var(--chart-dia);
-  --bp-ref-sys-stage2: var(--chart-sys);
-  --bp-ref-dia-severe: #1e40af;
-  --bp-ref-sys-severe: #5b21b6;
+  /* BP threshold strokes: muted vs data lines; labels on the right */
+  --bp-ref-line-dia-stage2: color-mix(in srgb, var(--chart-dia) 36%, transparent);
+  --bp-ref-line-sys-stage2: color-mix(in srgb, var(--chart-sys) 36%, transparent);
+  --bp-ref-line-dia-severe: color-mix(in srgb, #1e40af 34%, transparent);
+  --bp-ref-line-sys-severe: color-mix(in srgb, #5b21b6 34%, transparent);
+  --bp-ref-label: color-mix(in srgb, var(--text) 78%, transparent);
 
   --sans: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -79,10 +80,11 @@
   --chart-sleep-deep: #a78bfa;
   --chart-sleep-light: #38bdf8;
   --chart-sleep-awake: #fb923c;
-  --bp-ref-dia-stage2: #60a5fa;
-  --bp-ref-sys-stage2: #a78bfa;
-  --bp-ref-dia-severe: #93c5fd;
-  --bp-ref-sys-severe: #c4b5fd;
+  --bp-ref-line-dia-stage2: color-mix(in srgb, #60a5fa 32%, transparent);
+  --bp-ref-line-sys-stage2: color-mix(in srgb, #a78bfa 32%, transparent);
+  --bp-ref-line-dia-severe: color-mix(in srgb, #93c5fd 36%, transparent);
+  --bp-ref-line-sys-severe: color-mix(in srgb, #c4b5fd 36%, transparent);
+  --bp-ref-label: color-mix(in srgb, var(--text) 85%, transparent);
 }
 
 :root[data-theme='dark'] #social .button-icon {
