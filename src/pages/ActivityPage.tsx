@@ -5,6 +5,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -13,6 +14,7 @@ import {
 import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
+import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
 import { ChartBrush } from '@/components/ChartBrush'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
@@ -54,8 +56,14 @@ export function ActivityPage({
   const calsData = useMemo(() => cals.filter((d) => d.count > 0), [cals])
 
   const chartResetKey = `${range.start}-${range.end}-${dataRevision}-${gran}-${ts.length}`
+
+  const stepsZoom = useChartDragZoom(stepsData, chartResetKey)
   const stepsBrush = useBrushTimeSpan(stepsData, chartResetKey)
+  const stepsVisibleMs = stepsZoom.isZoomed ? stepsZoom.visibleSpanMs : stepsBrush.visibleSpanMs
+
+  const calsZoom = useChartDragZoom(calsData, chartResetKey)
   const calsBrush = useBrushTimeSpan(calsData, chartResetKey)
+  const calsVisibleMs = calsZoom.isZoomed ? calsZoom.visibleSpanMs : calsBrush.visibleSpanMs
 
   return (
     <div className="page">
@@ -65,10 +73,9 @@ export function ActivityPage({
         <p className="muted page-details-body">
           Steps and calories use hourly buckets when the toolbar date range is about a week
           or less; wider ranges use day/week/month buckets. Use the 2d or 7d preset (or any
-          short range) for hourly detail. The grey range bar under each chart only zooms
-          that chart along time; it does not switch hourly vs daily—that comes from the
-          toolbar range. The two times printed beside that bar are the start and end of the
-          zoomed window. Daily semantics follow max-per-day for totals elsewhere.
+          short range) for hourly detail. Drag across a chart to zoom into a time window, or
+          use the range bar underneath. The two zoom mechanisms are independent—drag zoom
+          replaces the range bar while active.
         </p>
       </details>
       {steps.length === 0 && cals.length === 0 && sport.length === 0 ? (
@@ -76,98 +83,148 @@ export function ActivityPage({
       ) : (
         <>
           <CollapsibleChartCard title="Steps (bucketed)">
-            <ResponsiveContainer width="100%" height={340}>
-              <LineChart
-                key={`steps-${chartResetKey}-${stepsData.length}`}
-                data={stepsData}
-                margin={LINE_CHART_MARGIN_WITH_BRUSH}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  type="number"
-                  dataKey="t"
-                  domain={['dataMin', 'dataMax']}
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={10}
-                  tickFormatter={(v) =>
-                    formatTimeAxisTick(v as number, stepsBrush.visibleSpanMs)
-                  }
-                />
-                <YAxis
-                  width={CHART_Y_AXIS_WIDTH}
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={8}
-                />
-                <Tooltip
-                  separator=""
-                  labelFormatter={(_, payload) => {
-                    const t = payload?.[0]?.payload?.t as number | undefined
-                    return t != null ? formatDateTime12(t) : ''
-                  }}
-                  formatter={(value) =>
-                    value == null
-                      ? ['—', '']
-                      : [`${Math.round(Number(value))}`, '']
-                  }
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="max"
-                  name=""
-                  stroke="var(--chart-steps)"
-                  dot={false}
-                />
-                <ChartBrush onChange={stepsBrush.onBrushChange} />
-              </LineChart>
-            </ResponsiveContainer>
+            {stepsZoom.isZoomed && (
+              <div className="zoom-reset-bar">
+                <span className="zoom-reset-label">Zoomed in</span>
+                <button
+                  type="button"
+                  className="btn secondary zoom-reset-btn"
+                  onClick={stepsZoom.resetZoom}
+                >
+                  Reset zoom
+                </button>
+              </div>
+            )}
+            <div className="drag-zoom-chart">
+              <ResponsiveContainer width="100%" height={340}>
+                <LineChart
+                  key={`steps-${chartResetKey}-${stepsData.length}`}
+                  data={stepsZoom.zoomedData}
+                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  {...stepsZoom.chartHandlers}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    type="number"
+                    dataKey="t"
+                    domain={['dataMin', 'dataMax']}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={10}
+                    tickFormatter={(v) =>
+                      formatTimeAxisTick(v as number, stepsVisibleMs)
+                    }
+                  />
+                  <YAxis
+                    width={CHART_Y_AXIS_WIDTH}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={8}
+                  />
+                  <Tooltip
+                    separator=""
+                    labelFormatter={(_, payload) => {
+                      const t = payload?.[0]?.payload?.t as number | undefined
+                      return t != null ? formatDateTime12(t) : ''
+                    }}
+                    formatter={(value) =>
+                      value == null
+                        ? ['—', '']
+                        : [`${Math.round(Number(value))}`, '']
+                    }
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="max"
+                    name=""
+                    stroke="var(--chart-steps)"
+                    dot={false}
+                  />
+                  {stepsZoom.selArea && (
+                    <ReferenceArea
+                      x1={stepsZoom.selArea.x1}
+                      x2={stepsZoom.selArea.x2}
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      stroke="var(--accent)"
+                      strokeOpacity={0.4}
+                    />
+                  )}
+                  {!stepsZoom.isZoomed && <ChartBrush onChange={stepsBrush.onBrushChange} />}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CollapsibleChartCard>
           <CollapsibleChartCard title="Calories (bucketed avg)">
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart
-                key={`cals-${chartResetKey}-${calsData.length}`}
-                data={calsData}
-                margin={LINE_CHART_MARGIN_WITH_BRUSH}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  type="number"
-                  dataKey="t"
-                  domain={['dataMin', 'dataMax']}
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={10}
-                  tickFormatter={(v) =>
-                    formatTimeAxisTick(v as number, calsBrush.visibleSpanMs)
-                  }
-                />
-                <YAxis
-                  width={CHART_Y_AXIS_WIDTH}
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={8}
-                />
-                <Tooltip
-                  separator=""
-                  labelFormatter={(_, payload) => {
-                    const t = payload?.[0]?.payload?.t as number | undefined
-                    return t != null ? formatDateTime12(t) : ''
-                  }}
-                  formatter={(value) =>
-                    value == null
-                      ? ['—', '']
-                      : [`${Number(value).toFixed(1)}`, '']
-                  }
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="avg"
-                  name=""
-                  stroke="var(--chart-cal)"
-                  dot={false}
-                />
-                <ChartBrush onChange={calsBrush.onBrushChange} />
-              </LineChart>
-            </ResponsiveContainer>
+            {calsZoom.isZoomed && (
+              <div className="zoom-reset-bar">
+                <span className="zoom-reset-label">Zoomed in</span>
+                <button
+                  type="button"
+                  className="btn secondary zoom-reset-btn"
+                  onClick={calsZoom.resetZoom}
+                >
+                  Reset zoom
+                </button>
+              </div>
+            )}
+            <div className="drag-zoom-chart">
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart
+                  key={`cals-${chartResetKey}-${calsData.length}`}
+                  data={calsZoom.zoomedData}
+                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  {...calsZoom.chartHandlers}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    type="number"
+                    dataKey="t"
+                    domain={['dataMin', 'dataMax']}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={10}
+                    tickFormatter={(v) =>
+                      formatTimeAxisTick(v as number, calsVisibleMs)
+                    }
+                  />
+                  <YAxis
+                    width={CHART_Y_AXIS_WIDTH}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={8}
+                  />
+                  <Tooltip
+                    separator=""
+                    labelFormatter={(_, payload) => {
+                      const t = payload?.[0]?.payload?.t as number | undefined
+                      return t != null ? formatDateTime12(t) : ''
+                    }}
+                    formatter={(value) =>
+                      value == null
+                        ? ['—', '']
+                        : [`${Number(value).toFixed(1)}`, '']
+                    }
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="avg"
+                    name=""
+                    stroke="var(--chart-cal)"
+                    dot={false}
+                  />
+                  {calsZoom.selArea && (
+                    <ReferenceArea
+                      x1={calsZoom.selArea.x1}
+                      x2={calsZoom.selArea.x2}
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      stroke="var(--accent)"
+                      strokeOpacity={0.4}
+                    />
+                  )}
+                  {!calsZoom.isZoomed && <ChartBrush onChange={calsBrush.onBrushChange} />}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CollapsibleChartCard>
           <CollapsibleChartCard title="Sport sessions" variant="table" defaultCollapsed>
             {sport.length === 0 ? (

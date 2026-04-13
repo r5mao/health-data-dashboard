@@ -5,6 +5,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -14,6 +15,7 @@ import { BpThresholdReferenceLines } from '@/charts/bloodPressureReference'
 import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
+import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { useBrushTimeSpan } from '@/charts/useBrushTimeSpan'
 import { ChartBrush } from '@/components/ChartBrush'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
@@ -21,7 +23,6 @@ import { db } from '@/db/schema'
 import { bucketBloodPressureDaily } from '@/metrics/bucketing'
 import { useDateRange } from '@/time/useDateRange'
 
-/** Recharts defaults sort labels A–Z, which puts Diastolic above Systolic. */
 function bpSeriesSortKey(dataKey: unknown): number {
   const k = String(dataKey ?? '')
   if (k === 'sys' || k === 'sysAvg') return 0
@@ -62,8 +63,10 @@ export function BloodPressurePage({
     dia: r.diastolic,
   }))
 
-  const bpBrushKey = `${range.start}-${range.end}-${rows.length}-${dataRevision}`
-  const { visibleSpanMs, onBrushChange } = useBrushTimeSpan(series, bpBrushKey)
+  const bpResetKey = `${range.start}-${range.end}-${rows.length}-${dataRevision}`
+  const zoom = useChartDragZoom(series, bpResetKey)
+  const brush = useBrushTimeSpan(series, bpResetKey)
+  const visibleSpanMs = zoom.isZoomed ? zoom.visibleSpanMs : brush.visibleSpanMs
 
   const bpChartMargin = {
     ...LINE_CHART_MARGIN_WITH_BRUSH,
@@ -76,8 +79,8 @@ export function BloodPressurePage({
     <div className="page">
       <h2>Blood pressure</h2>
       <p className="muted">
-        Individual readings and daily averages in the selected range. Use the
-        range bar under the readings chart to zoom into part of a day.
+        Individual readings and daily averages in the selected range. Drag
+        across the readings chart to zoom, or use the range bar underneath.
       </p>
       <details className="page-details">
         <summary className="page-details-summary">
@@ -86,7 +89,7 @@ export function BloodPressurePage({
         <p className="muted page-details-body">
           Faint dotted lines mark common reference levels; labels on the right
           of the chart name each line (Stage 2 vs severe, diastolic vs
-          systolic). Not medical advice—use your clinician’s targets.
+          systolic). Not medical advice—use your clinician's targets.
         </p>
       </details>
       {rows.length === 0 ? (
@@ -96,65 +99,90 @@ export function BloodPressurePage({
       ) : (
         <>
           <CollapsibleChartCard title="Readings">
-            <ResponsiveContainer width="100%" height={380}>
-              <LineChart
-                key={`bp-readings-${range.start}-${range.end}-${rows.length}`}
-                data={series}
-                margin={bpChartMargin}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <BpThresholdReferenceLines />
-                <XAxis
-                  type="number"
-                  dataKey="t"
-                  domain={['dataMin', 'dataMax']}
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={10}
-                  tickFormatter={(v) =>
-                    formatTimeAxisTick(v as number, visibleSpanMs)
-                  }
-                />
-                <YAxis
-                  domain={['auto', 'auto']}
-                  unit=" mmHg"
-                  width={CHART_Y_AXIS_WIDTH + 8}
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={8}
-                />
-                <Tooltip
-                  separator=""
-                  labelFormatter={(v) => formatDateTime12(v as number)}
-                  formatter={(value) =>
-                    value == null
-                      ? ['—', '']
-                      : [`${Math.round(Number(value))} mmHg`, '']
-                  }
-                  itemSorter={(item) => bpSeriesSortKey(item.dataKey)}
-                />
-                <BloodPressureLegend />
-                <Line
-                  type="monotone"
-                  dataKey="sys"
-                  name="Systolic"
-                  stroke="var(--chart-sys)"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  isAnimationActive={false}
-                  zIndex={500}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="dia"
-                  name="Diastolic"
-                  stroke="var(--chart-dia)"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  isAnimationActive={false}
-                  zIndex={500}
-                />
-                <ChartBrush onChange={onBrushChange} />
-              </LineChart>
-            </ResponsiveContainer>
+            {zoom.isZoomed && (
+              <div className="zoom-reset-bar">
+                <span className="zoom-reset-label">Zoomed in</span>
+                <button
+                  type="button"
+                  className="btn secondary zoom-reset-btn"
+                  onClick={zoom.resetZoom}
+                >
+                  Reset zoom
+                </button>
+              </div>
+            )}
+            <div className="drag-zoom-chart">
+              <ResponsiveContainer width="100%" height={380}>
+                <LineChart
+                  key={`bp-readings-${range.start}-${range.end}-${rows.length}`}
+                  data={zoom.zoomedData}
+                  margin={bpChartMargin}
+                  {...zoom.chartHandlers}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <BpThresholdReferenceLines />
+                  <XAxis
+                    type="number"
+                    dataKey="t"
+                    domain={['dataMin', 'dataMax']}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={10}
+                    tickFormatter={(v) =>
+                      formatTimeAxisTick(v as number, visibleSpanMs)
+                    }
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    unit=" mmHg"
+                    width={CHART_Y_AXIS_WIDTH + 8}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={8}
+                  />
+                  <Tooltip
+                    separator=""
+                    labelFormatter={(v) => formatDateTime12(v as number)}
+                    formatter={(value) =>
+                      value == null
+                        ? ['—', '']
+                        : [`${Math.round(Number(value))} mmHg`, '']
+                    }
+                    itemSorter={(item) => bpSeriesSortKey(item.dataKey)}
+                  />
+                  <BloodPressureLegend />
+                  <Line
+                    type="monotone"
+                    dataKey="sys"
+                    name="Systolic"
+                    stroke="var(--chart-sys)"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    isAnimationActive={false}
+                    zIndex={500}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="dia"
+                    name="Diastolic"
+                    stroke="var(--chart-dia)"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    isAnimationActive={false}
+                    zIndex={500}
+                  />
+                  {zoom.selArea && (
+                    <ReferenceArea
+                      x1={zoom.selArea.x1}
+                      x2={zoom.selArea.x2}
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      stroke="var(--accent)"
+                      strokeOpacity={0.4}
+                    />
+                  )}
+                  {!zoom.isZoomed && <ChartBrush onChange={brush.onBrushChange} />}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CollapsibleChartCard>
           <CollapsibleChartCard title="Daily averages">
             <ResponsiveContainer width="100%" height={280}>

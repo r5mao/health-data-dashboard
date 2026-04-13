@@ -626,3 +626,28 @@ details.collapsible-card[open] .collapsible-card-summary::before {
   font-size: 0.82rem;
   color: var(--text-h);
 }
+
+/* Drag-to-zoom: crosshair cursor on chart area, reset bar */
+.drag-zoom-chart {
+  cursor: crosshair;
+}
+
+.zoom-reset-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.zoom-reset-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.zoom-reset-btn {
+  font-size: 0.78rem;
+  padding: 0.2rem 0.6rem;
+  min-height: 1.6rem;
+}
