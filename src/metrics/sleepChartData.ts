@@ -33,6 +33,7 @@ export function toSleepTimelineRows(sessions: SleepSession[]): SleepTimelineRow[
 
 export type SleepStackRow = {
   label: string
+  t: number
   deep: number
   light: number
   awake: number
@@ -43,6 +44,7 @@ export function toSleepStackRows(sessions: SleepSession[]): SleepStackRow[] {
   const sorted = sortSessionsByEndTime(sessions)
   return sorted.map((s) => ({
     label: format(s.endTime, 'EEE MMM d, h:mm a'),
+    t: s.endTime,
     deep: s.deepMinutes,
     light: s.lightMinutes,
     awake: s.awakeMinutes,

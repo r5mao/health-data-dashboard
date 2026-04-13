@@ -57,6 +57,7 @@ export function BloodPressurePage({
   }, [range.start, range.end, dataRevision])
 
   const daily = bucketBloodPressureDaily(rows, range.start, range.end)
+  const dailyData = daily.filter((d) => d.n > 0)
   const series = rows.map((r) => ({
     t: r.timestamp,
     sys: r.systolic,
@@ -67,6 +68,8 @@ export function BloodPressurePage({
   const zoom = useChartDragZoom(series, bpResetKey)
   const brush = useBrushTimeSpan(series, bpResetKey)
   const visibleSpanMs = zoom.isZoomed ? zoom.visibleSpanMs : brush.visibleSpanMs
+
+  const dailyZoom = useChartDragZoom(dailyData, bpResetKey)
 
   const bpChartMargin = {
     ...LINE_CHART_MARGIN_WITH_BRUSH,
@@ -185,61 +188,91 @@ export function BloodPressurePage({
             </div>
           </CollapsibleChartCard>
           <CollapsibleChartCard title="Daily averages">
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart
-                data={daily.filter((d) => d.n > 0)}
-                margin={{
-                  top: 14,
-                  right: 148,
-                  bottom: 58,
-                  left: CHART_Y_AXIS_WIDTH + 12,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <BpThresholdReferenceLines />
-                <XAxis
-                  dataKey="label"
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={10}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  domain={['auto', 'auto']}
-                  width={CHART_Y_AXIS_WIDTH + 8}
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={8}
-                  unit=" mmHg"
-                />
-                <Tooltip
-                  separator=""
-                  formatter={(value) =>
-                    value == null
-                      ? ['—', '']
-                      : [`${Number(value).toFixed(1)} mmHg`, '']
-                  }
-                  itemSorter={(item) => bpSeriesSortKey(item.dataKey)}
-                />
-                <BloodPressureLegend />
-                <Line
-                  type="monotone"
-                  dataKey="sysAvg"
-                  name="Systolic"
-                  stroke="var(--chart-sys)"
-                  strokeWidth={2}
-                  dot={false}
-                  zIndex={500}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="diaAvg"
-                  name="Diastolic"
-                  stroke="var(--chart-dia)"
-                  strokeWidth={2}
-                  dot={false}
-                  zIndex={500}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {dailyZoom.isZoomed && (
+              <div className="zoom-reset-bar">
+                <span className="zoom-reset-label">Zoomed in</span>
+                <button
+                  type="button"
+                  className="btn secondary zoom-reset-btn"
+                  onClick={dailyZoom.resetZoom}
+                >
+                  Reset zoom
+                </button>
+              </div>
+            )}
+            <div className="drag-zoom-chart">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart
+                  data={dailyZoom.zoomedData}
+                  margin={{
+                    top: 14,
+                    right: 148,
+                    bottom: 58,
+                    left: CHART_Y_AXIS_WIDTH + 12,
+                  }}
+                  {...dailyZoom.chartHandlers}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <BpThresholdReferenceLines />
+                  <XAxis
+                    type="number"
+                    dataKey="t"
+                    domain={['dataMin', 'dataMax']}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={10}
+                    tickFormatter={(v) =>
+                      formatTimeAxisTick(v as number, dailyZoom.visibleSpanMs)
+                    }
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    width={CHART_Y_AXIS_WIDTH + 8}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={8}
+                    unit=" mmHg"
+                  />
+                  <Tooltip
+                    separator=""
+                    labelFormatter={(v) => formatTimeAxisTick(Number(v), 0)}
+                    formatter={(value) =>
+                      value == null
+                        ? ['—', '']
+                        : [`${Number(value).toFixed(1)} mmHg`, '']
+                    }
+                    itemSorter={(item) => bpSeriesSortKey(item.dataKey)}
+                  />
+                  <BloodPressureLegend />
+                  <Line
+                    type="monotone"
+                    dataKey="sysAvg"
+                    name="Systolic"
+                    stroke="var(--chart-sys)"
+                    strokeWidth={2}
+                    dot={false}
+                    zIndex={500}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="diaAvg"
+                    name="Diastolic"
+                    stroke="var(--chart-dia)"
+                    strokeWidth={2}
+                    dot={false}
+                    zIndex={500}
+                  />
+                  {dailyZoom.selArea && (
+                    <ReferenceArea
+                      x1={dailyZoom.selArea.x1}
+                      x2={dailyZoom.selArea.x2}
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      stroke="var(--accent)"
+                      strokeOpacity={0.4}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CollapsibleChartCard>
         </>
       )}

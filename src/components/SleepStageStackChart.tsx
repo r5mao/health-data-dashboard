@@ -3,17 +3,19 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
 import { CHART_AXIS_TICK } from '@/charts/chartAxis'
+import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
+import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { formatMinutesAsHhMm, toSleepStackRows } from '@/metrics/sleepChartData'
 import type { SleepSession } from '@/types/canonical'
 
-/** Y-axis domain is minutes; labels are hours. */
 function formatYAxisHours(v: number): string {
   const m = Number(v)
   if (!Number.isFinite(m)) return ''
@@ -31,77 +33,107 @@ type Props = {
 
 export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
   const rows = toSleepStackRows(sessions)
+  const zoom = useChartDragZoom(rows, chartResetKey)
+
   if (rows.length === 0) return null
 
-  const labelCount = rows.length
+  const data = zoom.zoomedData
+  const labelCount = data.length
   const bottom = labelCount > 8 ? 88 : labelCount > 4 ? 64 : 48
 
   return (
     <CollapsibleChartCard title="Sleep stage time (per session)">
-      <ResponsiveContainer width="100%" height={340}>
-        <BarChart
-          key={chartResetKey}
-          data={rows}
-          margin={{ top: 12, right: 16, left: 14, bottom: bottom + 4 }}
-          maxBarSize={48}
-          barCategoryGap="18%"
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="label"
-            interval={0}
-            tick={{
-              ...CHART_AXIS_TICK,
-              fontSize: labelCount > 5 ? 10 : 11,
-            }}
-            tickMargin={8}
-            angle={labelCount > 5 ? -30 : 0}
-            textAnchor={labelCount > 5 ? 'end' : 'middle'}
-            height={labelCount > 5 ? 72 : 48}
-          />
-          <YAxis
-            tickFormatter={formatYAxisHours}
-            tick={{ ...CHART_AXIS_TICK }}
-            tickMargin={8}
-            width={52}
-            label={{
-              value: 'Hours',
-              angle: -90,
-              position: 'insideLeft',
-              style: { fill: 'var(--text)' },
-            }}
-          />
-          <Tooltip
-            separator="     "
-            labelFormatter={(label) => String(label)}
-            formatter={(value, name) => [
-              formatMinutesAsHhMm(Number(value)),
-              String(name),
-            ]}
-            labelStyle={{ color: 'var(--text-h)' }}
-            itemStyle={{ paddingTop: 2, paddingBottom: 2 }}
-          />
-          <Legend />
-          <Bar
-            dataKey="deep"
-            name="Deep"
-            stackId="stages"
-            fill="var(--chart-sleep-deep)"
-          />
-          <Bar
-            dataKey="light"
-            name="Light"
-            stackId="stages"
-            fill="var(--chart-sleep-light)"
-          />
-          <Bar
-            dataKey="awake"
-            name="Awake"
-            stackId="stages"
-            fill="var(--chart-sleep-awake)"
-          />
-        </BarChart>
-      </ResponsiveContainer>
+      {zoom.isZoomed && (
+        <div className="zoom-reset-bar">
+          <span className="zoom-reset-label">Zoomed in</span>
+          <button
+            type="button"
+            className="btn secondary zoom-reset-btn"
+            onClick={zoom.resetZoom}
+          >
+            Reset zoom
+          </button>
+        </div>
+      )}
+      <div className="drag-zoom-chart">
+        <ResponsiveContainer width="100%" height={340}>
+          <BarChart
+            key={chartResetKey}
+            data={data}
+            margin={{ top: 12, right: 16, left: 14, bottom: bottom + 4 }}
+            maxBarSize={48}
+            barCategoryGap="18%"
+            {...zoom.chartHandlers}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              type="number"
+              dataKey="t"
+              domain={['dataMin', 'dataMax']}
+              tick={{
+                ...CHART_AXIS_TICK,
+                fontSize: labelCount > 5 ? 10 : 11,
+              }}
+              tickMargin={8}
+              angle={labelCount > 5 ? -30 : 0}
+              textAnchor={labelCount > 5 ? 'end' : 'middle'}
+              height={labelCount > 5 ? 72 : 48}
+              tickFormatter={(v) => formatTimeAxisTick(v as number, zoom.visibleSpanMs)}
+            />
+            <YAxis
+              tickFormatter={formatYAxisHours}
+              tick={{ ...CHART_AXIS_TICK }}
+              tickMargin={8}
+              width={52}
+              label={{
+                value: 'Hours',
+                angle: -90,
+                position: 'insideLeft',
+                style: { fill: 'var(--text)' },
+              }}
+            />
+            <Tooltip
+              separator="     "
+              labelFormatter={(v) => formatTimeAxisTick(Number(v), 0)}
+              formatter={(value, name) => [
+                formatMinutesAsHhMm(Number(value)),
+                String(name),
+              ]}
+              labelStyle={{ color: 'var(--text-h)' }}
+              itemStyle={{ paddingTop: 2, paddingBottom: 2 }}
+            />
+            <Legend />
+            <Bar
+              dataKey="deep"
+              name="Deep"
+              stackId="stages"
+              fill="var(--chart-sleep-deep)"
+            />
+            <Bar
+              dataKey="light"
+              name="Light"
+              stackId="stages"
+              fill="var(--chart-sleep-light)"
+            />
+            <Bar
+              dataKey="awake"
+              name="Awake"
+              stackId="stages"
+              fill="var(--chart-sleep-awake)"
+            />
+            {zoom.selArea && (
+              <ReferenceArea
+                x1={zoom.selArea.x1}
+                x2={zoom.selArea.x2}
+                fill="var(--accent)"
+                fillOpacity={0.15}
+                stroke="var(--accent)"
+                strokeOpacity={0.4}
+              />
+            )}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
       <p className="muted" style={{ marginTop: 8, fontSize: 14 }}>
         Stages show total time per session, not order during the night.
       </p>

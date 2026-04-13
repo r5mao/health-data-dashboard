@@ -5,14 +5,16 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
 import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
+import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
-import { ChartBrush } from '@/components/ChartBrush'
+import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { SleepStageStackChart } from '@/components/SleepStageStackChart'
 import { SleepTimelineChart } from '@/components/SleepTimelineChart'
@@ -44,17 +46,24 @@ export function RecoveryPage({
   const o2 = bucketTimeseries(ts, range.start, range.end, gran, 'oxygen')
   const br = bucketTimeseries(ts, range.start, range.end, gran, 'breathing')
 
+  const o2Data = useMemo(() => o2.filter((d) => d.count > 0), [o2])
+  const brData = useMemo(() => br.filter((d) => d.count > 0), [br])
+
   const sleepChartResetKey = useMemo(
     () => `${range.start}-${range.end}-${dataRevision}-${sleep.length}`,
     [range.start, range.end, dataRevision, sleep.length],
   )
+  const chartResetKey = `${range.start}-${range.end}-${dataRevision}-${gran}-${ts.length}`
+
+  const o2Zoom = useChartDragZoom(o2Data, chartResetKey)
+  const brZoom = useChartDragZoom(brData, chartResetKey)
 
   return (
     <div className="page">
       <h2>Recovery</h2>
       <p className="muted">
-        Sleep sessions, SpO₂, and breathing in the selected range. Charts use hourly buckets
-        when the toolbar range is about a week or less (same as Activity).
+        Sleep sessions, SpO₂, and breathing in the selected range. Drag across a chart to
+        zoom, or use the toolbar to change the date window.
       </p>
       {sleep.length === 0 && o2.length === 0 && br.length === 0 ? (
         <p className="muted">No recovery metrics in this range.</p>
@@ -105,83 +114,141 @@ export function RecoveryPage({
             )}
           </CollapsibleChartCard>
           <CollapsibleChartCard title="SpO₂ (bucketed)">
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart
-                data={o2.filter((d) => d.count > 0)}
-                margin={LINE_CHART_MARGIN_WITH_BRUSH}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="label"
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={10}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  domain={[80, 100]}
-                  width={CHART_Y_AXIS_WIDTH}
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={8}
-                  tickFormatter={(v) => Number(v).toFixed(1)}
-                />
-                <Tooltip
-                  separator=""
-                  formatter={(value) =>
-                    value == null
-                      ? ['—', '']
-                      : [`${Number(value).toFixed(1)}%`, '']
-                  }
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="avg"
-                  name=""
-                  stroke="var(--chart-o2)"
-                  dot={false}
-                />
-                <ChartBrush />
-              </LineChart>
-            </ResponsiveContainer>
+            {o2Zoom.isZoomed && (
+              <div className="zoom-reset-bar">
+                <span className="zoom-reset-label">Zoomed in</span>
+                <button
+                  type="button"
+                  className="btn secondary zoom-reset-btn"
+                  onClick={o2Zoom.resetZoom}
+                >
+                  Reset zoom
+                </button>
+              </div>
+            )}
+            <div className="drag-zoom-chart">
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart
+                  data={o2Zoom.zoomedData}
+                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  {...o2Zoom.chartHandlers}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    type="number"
+                    dataKey="t"
+                    domain={['dataMin', 'dataMax']}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={10}
+                    tickFormatter={(v) =>
+                      formatTimeAxisTick(v as number, o2Zoom.visibleSpanMs)
+                    }
+                  />
+                  <YAxis
+                    domain={[80, 100]}
+                    width={CHART_Y_AXIS_WIDTH}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={8}
+                    tickFormatter={(v) => Number(v).toFixed(1)}
+                  />
+                  <Tooltip
+                    separator=""
+                    labelFormatter={(v) => formatTimeAxisTick(Number(v), 0)}
+                    formatter={(value) =>
+                      value == null
+                        ? ['—', '']
+                        : [`${Number(value).toFixed(1)}%`, '']
+                    }
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="avg"
+                    name=""
+                    stroke="var(--chart-o2)"
+                    dot={false}
+                  />
+                  {o2Zoom.selArea && (
+                    <ReferenceArea
+                      x1={o2Zoom.selArea.x1}
+                      x2={o2Zoom.selArea.x2}
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      stroke="var(--accent)"
+                      strokeOpacity={0.4}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CollapsibleChartCard>
           <CollapsibleChartCard title="Breathing (bucketed avg)">
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart
-                data={br.filter((d) => d.count > 0)}
-                margin={LINE_CHART_MARGIN_WITH_BRUSH}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="label"
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={10}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  width={CHART_Y_AXIS_WIDTH + 4}
-                  tick={{ ...CHART_AXIS_TICK }}
-                  tickMargin={8}
-                  tickFormatter={(v) => Number(v).toFixed(1)}
-                />
-                <Tooltip
-                  separator=""
-                  formatter={(value) =>
-                    value == null
-                      ? ['—', '']
-                      : [`${Number(value).toFixed(1)} / min`, '']
-                  }
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="avg"
-                  name=""
-                  stroke="var(--chart-br)"
-                  dot={false}
-                />
-                <ChartBrush />
-              </LineChart>
-            </ResponsiveContainer>
+            {brZoom.isZoomed && (
+              <div className="zoom-reset-bar">
+                <span className="zoom-reset-label">Zoomed in</span>
+                <button
+                  type="button"
+                  className="btn secondary zoom-reset-btn"
+                  onClick={brZoom.resetZoom}
+                >
+                  Reset zoom
+                </button>
+              </div>
+            )}
+            <div className="drag-zoom-chart">
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart
+                  data={brZoom.zoomedData}
+                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                  {...brZoom.chartHandlers}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    type="number"
+                    dataKey="t"
+                    domain={['dataMin', 'dataMax']}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={10}
+                    tickFormatter={(v) =>
+                      formatTimeAxisTick(v as number, brZoom.visibleSpanMs)
+                    }
+                  />
+                  <YAxis
+                    width={CHART_Y_AXIS_WIDTH + 4}
+                    tick={{ ...CHART_AXIS_TICK }}
+                    tickMargin={8}
+                    tickFormatter={(v) => Number(v).toFixed(1)}
+                  />
+                  <Tooltip
+                    separator=""
+                    labelFormatter={(v) => formatTimeAxisTick(Number(v), 0)}
+                    formatter={(value) =>
+                      value == null
+                        ? ['—', '']
+                        : [`${Number(value).toFixed(1)} / min`, '']
+                    }
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="avg"
+                    name=""
+                    stroke="var(--chart-br)"
+                    dot={false}
+                  />
+                  {brZoom.selArea && (
+                    <ReferenceArea
+                      x1={brZoom.selArea.x1}
+                      x2={brZoom.selArea.x2}
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      stroke="var(--accent)"
+                      strokeOpacity={0.4}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CollapsibleChartCard>
         </>
       )}
