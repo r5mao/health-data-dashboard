@@ -1,7 +1,9 @@
 .app {
   text-align: left;
   padding: 1.25rem 1.5rem 3rem;
-  max-width: 1200px;
+  max-width: none;
+  width: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
 }
 
