@@ -9,7 +9,12 @@ import {
   YAxis,
 } from 'recharts'
 import type { TooltipContentProps } from 'recharts'
-import { CHART_AXIS_TICK, padTimeDomainForBars } from '@/charts/chartAxis'
+import {
+  CHART_AXIS_TICK,
+  CHART_MARGIN_LEFT,
+  buildEvenTimeAxisFromDomain,
+  padTimeDomainForBars,
+} from '@/charts/chartAxis'
 import { ChartLegendTopRight } from '@/charts/chartLegend'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { useChartDragZoom } from '@/charts/useChartDragZoom'
@@ -80,9 +85,12 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
 
   const data = zoom.zoomedData
   const xDomain = useMemo(() => padTimeDomainForBars(data), [data])
+  const xTimeAxis = useMemo(
+    () => buildEvenTimeAxisFromDomain(xDomain),
+    [xDomain],
+  )
   const labelCount = data.length
   const bottom = labelCount > 8 ? 88 : labelCount > 4 ? 64 : 48
-  const tickCount = Math.min(14, Math.max(6, labelCount))
 
   return (
     <CollapsibleChartCard title="Sleep stage time (per session)">
@@ -103,7 +111,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
           <BarChart
             key={chartResetKey}
             data={data}
-            margin={{ top: 28, right: 88, left: 56, bottom: bottom + 4 }}
+            margin={{ top: 28, right: 88, left: CHART_MARGIN_LEFT, bottom: bottom + 4 }}
             maxBarSize={48}
             barCategoryGap="18%"
             {...zoom.chartHandlers}
@@ -113,8 +121,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
               type="number"
               dataKey="t"
               domain={xDomain ?? ['dataMin', 'dataMax']}
-              tickCount={tickCount}
-              minTickGap={4}
+              ticks={xTimeAxis.ticks}
               tick={{
                 ...CHART_AXIS_TICK,
                 fontSize: labelCount > 5 ? 10 : 11,
@@ -123,7 +130,9 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
               angle={labelCount > 5 ? -30 : 0}
               textAnchor={labelCount > 5 ? 'end' : 'middle'}
               height={labelCount > 5 ? 72 : 48}
-              tickFormatter={(v) => formatTimeAxisTick(v as number, zoom.visibleSpanMs)}
+              tickFormatter={(v) =>
+                formatTimeAxisTick(v as number, xTimeAxis.spanMs)
+              }
             />
             <YAxis
               tickFormatter={formatYAxisHours}

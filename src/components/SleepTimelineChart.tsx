@@ -9,9 +9,10 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts'
+import { useMemo } from 'react'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { formatTooltipDateTime } from '@/time/formatDateTime12'
-import { CHART_AXIS_TICK } from '@/charts/chartAxis'
+import { CHART_AXIS_TICK, buildEvenTimeAxisFromDomain } from '@/charts/chartAxis'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { toSleepTimelineRows, type SleepTimelineRow } from '@/metrics/sleepChartData'
@@ -31,9 +32,12 @@ export function SleepTimelineChart({
   chartResetKey,
 }: Props) {
   const rows: SleepTimelineRow[] = toSleepTimelineRows(sessions)
-  const spanMs = rangeEnd - rangeStart
   const n = rows.length
   const chartHeight = Math.min(520, Math.max(200, 56 + n * 36))
+  const rangeTimeAxis = useMemo(
+    () => buildEvenTimeAxisFromDomain([rangeStart, rangeEnd]),
+    [rangeStart, rangeEnd],
+  )
 
   if (n === 0) return null
 
@@ -51,11 +55,12 @@ export function SleepTimelineChart({
             dataKey="tMid"
             domain={[rangeStart, rangeEnd]}
             allowDataOverflow
-            tickCount={12}
-            minTickGap={6}
+            ticks={rangeTimeAxis.ticks}
             tick={{ ...CHART_AXIS_TICK }}
             tickMargin={10}
-            tickFormatter={(v) => formatTimeAxisTick(v as number, spanMs)}
+            tickFormatter={(v) =>
+              formatTimeAxisTick(v as number, rangeTimeAxis.spanMs)
+            }
           />
           <YAxis
             type="number"

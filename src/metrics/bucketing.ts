@@ -156,7 +156,7 @@ export function bucketBloodPressureDaily(
     }))
 }
 
-/** Mean systolic/diastolic per clock hour (0–23, local time), across all readings in range. */
+/** Mean or median systolic/diastolic per clock hour (0–23, local time), across all readings in range. */
 export type BpHourOfDayPoint = {
   hour: number
   sys: number | null
@@ -164,8 +164,18 @@ export type BpHourOfDayPoint = {
   n: number
 }
 
+export type BpHourOfDayAggregate = 'mean' | 'median'
+
+function median(nums: number[]): number {
+  if (nums.length === 0) return NaN
+  const s = [...nums].sort((a, b) => a - b)
+  const mid = Math.floor(s.length / 2)
+  return s.length % 2 === 1 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2
+}
+
 export function bloodPressureHourOfDayAverages(
   readings: { timestamp: number; systolic: number; diastolic: number }[],
+  aggregate: BpHourOfDayAggregate = 'mean',
 ): BpHourOfDayPoint[] {
   const buckets: { sys: number[]; dia: number[] }[] = Array.from({ length: 24 }, () => ({
     sys: [],
@@ -179,6 +189,14 @@ export function bloodPressureHourOfDayAverages(
   return buckets.map((b, hour) => {
     if (b.sys.length === 0) {
       return { hour, sys: null, dia: null, n: 0 }
+    }
+    if (aggregate === 'median') {
+      return {
+        hour,
+        sys: median(b.sys),
+        dia: median(b.dia),
+        n: b.sys.length,
+      }
     }
     return {
       hour,

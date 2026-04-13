@@ -11,7 +11,12 @@ import {
   YAxis,
 } from 'recharts'
 import { BpThresholdReferenceLines } from '@/charts/bloodPressureReference'
-import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
+import {
+  CHART_AXIS_TICK,
+  CHART_MARGIN_LEFT,
+  CHART_Y_AXIS_WIDTH,
+  buildEvenTimeAxis,
+} from '@/charts/chartAxis'
 import { ChartLegendTopRight } from '@/charts/chartLegend'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import {
@@ -22,6 +27,7 @@ import { useChartDragZoom } from '@/charts/useChartDragZoom'
 import { CollapsibleChartCard } from '@/components/CollapsibleChartCard'
 import { db } from '@/db/schema'
 import {
+  type BpHourOfDayAggregate,
   bloodPressureHourOfDayAverages,
   bucketBloodPressureDaily,
   bucketTimeseriesAdaptive,
@@ -51,6 +57,9 @@ function formatBpHourRangeLabel(hour: number): string {
   return `${formatBpHourTick(h)}–${formatBpHourTick(h + 1)}`
 }
 
+/** Even 2-hour marks on 0–23 (hour-of-day chart). */
+const BP_HOUR_AXIS_TICKS = Array.from({ length: 12 }, (_, i) => i * 2)
+
 export function BloodPressurePage({
   dataRevision,
 }: {
@@ -62,6 +71,8 @@ export function BloodPressurePage({
   >([])
   const [hrRows, setHrRows] = useState<Awaited<ReturnType<typeof loadHeartRate>>>([])
   const [pressureRows, setPressureRows] = useState<Awaited<ReturnType<typeof loadPressure>>>([])
+  const [hourOfDayAggregate, setHourOfDayAggregate] =
+    useState<BpHourOfDayAggregate>('median')
 
   useEffect(() => {
     void Promise.all([
@@ -78,7 +89,10 @@ export function BloodPressurePage({
   const baseGran = timeseriesChartGranularityFromMs(range.end - range.start)
   const daily = bucketBloodPressureDaily(rows, range.start, range.end)
   const dailyData = daily.filter((d) => d.n > 0)
-  const hourOfDayData = useMemo(() => bloodPressureHourOfDayAverages(rows), [rows])
+  const hourOfDayData = useMemo(
+    () => bloodPressureHourOfDayAverages(rows, hourOfDayAggregate),
+    [rows, hourOfDayAggregate],
+  )
   const hr = useMemo(
     () => bucketTimeseriesAdaptive(hrRows, range.start, range.end, 'heart_rate'),
     [hrRows, range.start, range.end],
@@ -124,6 +138,20 @@ export function BloodPressurePage({
     [pressureRows, range.start, range.end, pressureZoom.zoomDomain],
   )
 
+  const readingsTimeAxis = useMemo(
+    () => buildEvenTimeAxis(zoom.zoomedData),
+    [zoom.zoomedData],
+  )
+  const dailyTimeAxis = useMemo(
+    () => buildEvenTimeAxis(dailyZoom.zoomedData),
+    [dailyZoom.zoomedData],
+  )
+  const hrTimeAxis = useMemo(() => buildEvenTimeAxis(hrPlotData), [hrPlotData])
+  const pressureTimeAxis = useMemo(
+    () => buildEvenTimeAxis(pressurePlotData),
+    [pressurePlotData],
+  )
+
   /** Top: horizontal legend. Right: reference-line labels only (legend moved off the right edge). */
   const bpChartMargin = {
     ...LINE_CHART_MARGIN_WITH_BRUSH,
@@ -136,14 +164,14 @@ export function BloodPressurePage({
     top: 30,
     right: 96,
     bottom: 56,
-    left: CHART_Y_AXIS_WIDTH + 12,
+    left: CHART_MARGIN_LEFT,
   } as const
 
   const bpHourOfDayMargin = {
     top: 30,
     right: 96,
     bottom: 68,
-    left: CHART_Y_AXIS_WIDTH + 12,
+    left: CHART_MARGIN_LEFT,
   } as const
 
   return (
@@ -199,12 +227,11 @@ export function BloodPressurePage({
                         type="number"
                         dataKey="t"
                         domain={['dataMin', 'dataMax']}
-                        tickCount={12}
-                        minTickGap={6}
+                        ticks={readingsTimeAxis.ticks}
                         tick={{ ...CHART_AXIS_TICK }}
                         tickMargin={10}
                         tickFormatter={(v) =>
-                          formatTimeAxisTick(v as number, zoom.visibleSpanMs)
+                          formatTimeAxisTick(v as number, readingsTimeAxis.spanMs)
                         }
                       />
                       <YAxis
@@ -285,12 +312,11 @@ export function BloodPressurePage({
                         type="number"
                         dataKey="t"
                         domain={['dataMin', 'dataMax']}
-                        tickCount={12}
-                        minTickGap={6}
+                        ticks={dailyTimeAxis.ticks}
                         tick={{ ...CHART_AXIS_TICK }}
                         tickMargin={10}
                         tickFormatter={(v) =>
-                          formatTimeAxisTick(v as number, dailyZoom.visibleSpanMs)
+                          formatTimeAxisTick(v as number, dailyTimeAxis.spanMs)
                         }
                       />
                       <YAxis
@@ -344,11 +370,40 @@ export function BloodPressurePage({
                 </div>
               </CollapsibleChartCard>
               <CollapsibleChartCard title="Average by hour of day">
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    gap: '0.5rem 0.85rem',
+                    marginBottom: 10,
+                  }}
+                >
+                  <span className="muted" style={{ fontSize: 13 }}>
+                    Central tendency:
+                  </span>
+                  <div className="preset-row" role="group" aria-label="Hour-of-day statistic">
+                    <button
+                      type="button"
+                      className={`preset-btn${hourOfDayAggregate === 'mean' ? ' active' : ''}`}
+                      onClick={() => setHourOfDayAggregate('mean')}
+                    >
+                      Mean
+                    </button>
+                    <button
+                      type="button"
+                      className={`preset-btn${hourOfDayAggregate === 'median' ? ' active' : ''}`}
+                      onClick={() => setHourOfDayAggregate('median')}
+                    >
+                      Median
+                    </button>
+                  </div>
+                </div>
                 <p className="muted" style={{ marginBottom: 10, fontSize: 14 }}>
-                  X-axis is one day (12a → 11p, local time). For each hour, the mean of all
-                  systolic and diastolic readings in that hour across the selected range.
-                  Purple systolic, blue diastolic—same as Readings. Hours with no data show a
-                  gap.
+                  X-axis is one day (12a → 11p, local time). For each hour, the{' '}
+                  {hourOfDayAggregate === 'mean' ? 'mean' : 'median'} of all systolic and
+                  diastolic readings in that hour across the selected range. Purple systolic,
+                  blue diastolic—same as Readings. Hours with no data show a gap.
                 </p>
                 <div className="drag-zoom-chart">
                   <ResponsiveContainer width="100%" height="100%">
@@ -362,7 +417,7 @@ export function BloodPressurePage({
                         type="number"
                         dataKey="hour"
                         domain={[-0.5, 23.5]}
-                        ticks={[0, 3, 6, 9, 12, 15, 18, 21, 23]}
+                        ticks={BP_HOUR_AXIS_TICKS}
                         tick={{ ...CHART_AXIS_TICK }}
                         tickMargin={10}
                         tickFormatter={(v) => formatBpHourTick(Number(v))}
@@ -448,12 +503,11 @@ export function BloodPressurePage({
                       type="number"
                       dataKey="t"
                       domain={['dataMin', 'dataMax']}
-                      tickCount={12}
-                      minTickGap={6}
+                      ticks={hrTimeAxis.ticks}
                       tick={{ ...CHART_AXIS_TICK }}
                       tickMargin={10}
                       tickFormatter={(v) =>
-                        formatTimeAxisTick(v as number, hrZoom.visibleSpanMs)
+                        formatTimeAxisTick(v as number, hrTimeAxis.spanMs)
                       }
                     />
                     <YAxis
@@ -525,12 +579,11 @@ export function BloodPressurePage({
                       type="number"
                       dataKey="t"
                       domain={['dataMin', 'dataMax']}
-                      tickCount={12}
-                      minTickGap={6}
+                      ticks={pressureTimeAxis.ticks}
                       tick={{ ...CHART_AXIS_TICK }}
                       tickMargin={10}
                       tickFormatter={(v) =>
-                        formatTimeAxisTick(v as number, pressureZoom.visibleSpanMs)
+                        formatTimeAxisTick(v as number, pressureTimeAxis.spanMs)
                       }
                     />
                     <YAxis

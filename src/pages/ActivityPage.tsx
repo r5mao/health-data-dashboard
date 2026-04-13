@@ -15,7 +15,10 @@ import {
 import {
   CHART_AXIS_TICK,
   CHART_Y_AXIS_WIDTH,
+  buildEvenTimeAxis,
+  buildEvenTimeAxisFromDomain,
   padTimeDomainForBars,
+  timeDomainFromSeries,
 } from '@/charts/chartAxis'
 import { ChartLegendTopRight } from '@/charts/chartLegend'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
@@ -107,6 +110,13 @@ export function ActivityPage({
     () => padTimeDomainForBars(stepsPlotData),
     [stepsPlotData],
   )
+  const stepsDomain = stepsXDomain ?? timeDomainFromSeries(stepsPlotData)
+  const stepsTimeAxis = useMemo(
+    () => buildEvenTimeAxisFromDomain(stepsDomain),
+    [stepsDomain],
+  )
+  const calsTimeAxis = useMemo(() => buildEvenTimeAxis(calsPlotData), [calsPlotData])
+  const hrTimeAxis = useMemo(() => buildEvenTimeAxis(hrPlotData), [hrPlotData])
 
   return (
     <div className="page">
@@ -143,10 +153,7 @@ export function ActivityPage({
                 <BarChart
                   key={`steps-${chartResetKey}-${stepsData.length}`}
                   data={stepsPlotData}
-                  margin={{
-                    ...LINE_CHART_MARGIN_WITH_BRUSH,
-                    left: Math.max(LINE_CHART_MARGIN_WITH_BRUSH.left, 72),
-                  }}
+                  margin={LINE_CHART_MARGIN_WITH_BRUSH}
                   barCategoryGap="18%"
                   {...stepsZoom.chartHandlers}
                 >
@@ -155,12 +162,11 @@ export function ActivityPage({
                     type="number"
                     dataKey="t"
                     domain={stepsXDomain ?? ['dataMin', 'dataMax']}
-                    tickCount={12}
-                    minTickGap={6}
+                    ticks={stepsTimeAxis.ticks}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
-                      formatTimeAxisTick(v as number, stepsZoom.visibleSpanMs)
+                      formatTimeAxisTick(v as number, stepsTimeAxis.spanMs)
                     }
                   />
                   <YAxis
@@ -222,12 +228,11 @@ export function ActivityPage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
-                    tickCount={12}
-                    minTickGap={6}
+                    ticks={calsTimeAxis.ticks}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
-                      formatTimeAxisTick(v as number, calsZoom.visibleSpanMs)
+                      formatTimeAxisTick(v as number, calsTimeAxis.spanMs)
                     }
                   />
                   <YAxis
@@ -296,12 +301,11 @@ export function ActivityPage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
-                    tickCount={12}
-                    minTickGap={6}
+                    ticks={hrTimeAxis.ticks}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
-                      formatTimeAxisTick(v as number, hrZoom.visibleSpanMs)
+                      formatTimeAxisTick(v as number, hrTimeAxis.spanMs)
                     }
                   />
                   <YAxis

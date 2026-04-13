@@ -10,7 +10,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
+import {
+  CHART_AXIS_TICK,
+  CHART_Y_AXIS_WIDTH,
+  buildEvenTimeAxis,
+} from '@/charts/chartAxis'
 import { ChartLegendTopRight } from '@/charts/chartLegend'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_TOP_LEGEND } from '@/charts/lineChartMargins'
@@ -87,6 +91,10 @@ export function RecoveryPage({
       ).filter((d) => d.count > 0),
     [ts, range.start, range.end, hrZoom.zoomDomain],
   )
+
+  const o2TimeAxis = useMemo(() => buildEvenTimeAxis(o2PlotData), [o2PlotData])
+  const brTimeAxis = useMemo(() => buildEvenTimeAxis(brPlotData), [brPlotData])
+  const hrTimeAxis = useMemo(() => buildEvenTimeAxis(hrPlotData), [hrPlotData])
 
   return (
     <div className="page">
@@ -168,12 +176,11 @@ export function RecoveryPage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
-                    tickCount={12}
-                    minTickGap={6}
+                    ticks={o2TimeAxis.ticks}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
-                      formatTimeAxisTick(v as number, o2Zoom.visibleSpanMs)
+                      formatTimeAxisTick(v as number, o2TimeAxis.spanMs)
                     }
                   />
                   <YAxis
@@ -239,12 +246,11 @@ export function RecoveryPage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
-                    tickCount={12}
-                    minTickGap={6}
+                    ticks={brTimeAxis.ticks}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
-                      formatTimeAxisTick(v as number, brZoom.visibleSpanMs)
+                      formatTimeAxisTick(v as number, brTimeAxis.spanMs)
                     }
                   />
                   <YAxis
@@ -309,12 +315,11 @@ export function RecoveryPage({
                     type="number"
                     dataKey="t"
                     domain={['dataMin', 'dataMax']}
-                    tickCount={12}
-                    minTickGap={6}
+                    ticks={hrTimeAxis.ticks}
                     tick={{ ...CHART_AXIS_TICK }}
                     tickMargin={10}
                     tickFormatter={(v) =>
-                      formatTimeAxisTick(v as number, hrZoom.visibleSpanMs)
+                      formatTimeAxisTick(v as number, hrTimeAxis.spanMs)
                     }
                   />
                   <YAxis
