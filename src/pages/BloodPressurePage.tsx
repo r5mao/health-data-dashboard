@@ -54,14 +54,18 @@ export function BloodPressurePage({
     Awaited<ReturnType<typeof loadBp>>
   >([])
   const [hrRows, setHrRows] = useState<Awaited<ReturnType<typeof loadHeartRate>>>([])
+  const [pressureRows, setPressureRows] = useState<Awaited<ReturnType<typeof loadPressure>>>([])
 
   useEffect(() => {
-    void Promise.all([loadBp(range.start, range.end), loadHeartRate(range.start, range.end)]).then(
-      ([bp, hr]) => {
+    void Promise.all([
+      loadBp(range.start, range.end),
+      loadHeartRate(range.start, range.end),
+      loadPressure(range.start, range.end),
+    ]).then(([bp, hr, pressure]) => {
         setRows(bp)
         setHrRows(hr)
-      },
-    )
+        setPressureRows(pressure)
+      })
   }, [range.start, range.end, dataRevision])
 
   const spanDays = (range.end - range.start) / 86400000
@@ -72,18 +76,24 @@ export function BloodPressurePage({
     () => bucketTimeseries(hrRows, range.start, range.end, gran, 'heart_rate'),
     [hrRows, range.start, range.end, gran],
   )
+  const pressure = useMemo(
+    () => bucketTimeseries(pressureRows, range.start, range.end, gran, 'pressure'),
+    [pressureRows, range.start, range.end, gran],
+  )
   const hrData = useMemo(() => hr.filter((d) => d.count > 0), [hr])
+  const pressureData = useMemo(() => pressure.filter((d) => d.count > 0), [pressure])
   const series = rows.map((r) => ({
     t: r.timestamp,
     sys: r.systolic,
     dia: r.diastolic,
   }))
 
-  const bpResetKey = `${range.start}-${range.end}-${rows.length}-${hrData.length}-${dataRevision}`
+  const bpResetKey = `${range.start}-${range.end}-${rows.length}-${hrData.length}-${pressureData.length}-${dataRevision}`
   const zoom = useChartDragZoom(series, bpResetKey)
 
   const dailyZoom = useChartDragZoom(dailyData, bpResetKey)
   const hrZoom = useChartDragZoom(hrData, bpResetKey)
+  const pressureZoom = useChartDragZoom(pressureData, bpResetKey)
 
   const bpChartMargin = {
     ...LINE_CHART_MARGIN_WITH_BRUSH,
@@ -109,10 +119,10 @@ export function BloodPressurePage({
           systolic). Not medical advice—use your clinician's targets.
         </p>
       </details>
-      {rows.length === 0 && hrData.length === 0 ? (
+      {rows.length === 0 && hrData.length === 0 && pressureData.length === 0 ? (
         <p className="muted">
-          No blood pressure or heart-rate readings in this range. Import CSV or widen
-          the range.
+          No blood pressure, heart-rate, or pressure-index readings in this range.
+          Import CSV or widen the range.
         </p>
       ) : (
         <>
@@ -375,6 +385,83 @@ export function BloodPressurePage({
           ) : (
             <p className="muted">No heart rate readings in this range.</p>
           )}
+          {pressureData.length > 0 ? (
+            <CollapsibleChartCard title="Pressure index (bucketed avg)">
+              {pressureZoom.isZoomed && (
+                <div className="zoom-reset-bar">
+                  <span className="zoom-reset-label">Zoomed in</span>
+                  <button
+                    type="button"
+                    className="btn secondary zoom-reset-btn"
+                    onClick={pressureZoom.resetZoom}
+                  >
+                    Reset zoom
+                  </button>
+                </div>
+              )}
+              <div className="drag-zoom-chart">
+                <ResponsiveContainer width="100%" height={320}>
+                  <LineChart
+                    key={`bp-pressure-${bpResetKey}-${pressureData.length}`}
+                    data={pressureZoom.zoomedData}
+                    margin={LINE_CHART_MARGIN_WITH_BRUSH}
+                    {...pressureZoom.chartHandlers}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      type="number"
+                      dataKey="t"
+                      domain={['dataMin', 'dataMax']}
+                      tickCount={12}
+                      minTickGap={6}
+                      tick={{ ...CHART_AXIS_TICK }}
+                      tickMargin={10}
+                      tickFormatter={(v) =>
+                        formatTimeAxisTick(v as number, pressureZoom.visibleSpanMs)
+                      }
+                    />
+                    <YAxis
+                      width={CHART_Y_AXIS_WIDTH}
+                      tick={{ ...CHART_AXIS_TICK }}
+                      tickMargin={8}
+                    />
+                    <Tooltip
+                      separator=""
+                      labelFormatter={(_, payload) => {
+                        const t = payload?.[0]?.payload?.t as number | undefined
+                        return t != null ? formatTooltipDateTime(t) : ''
+                      }}
+                      formatter={(value) =>
+                        value == null
+                          ? ['—', '']
+                          : [`${Number(value).toFixed(1)} index`, '']
+                      }
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="avg"
+                      name=""
+                      stroke="var(--chart-pressure)"
+                      dot={false}
+                    />
+                    {pressureZoom.selArea && (
+                      <ReferenceArea
+                        x1={pressureZoom.selArea.x1}
+                        x2={pressureZoom.selArea.x2}
+                        fill="var(--accent)"
+                        fillOpacity={0.15}
+                        stroke="var(--accent)"
+                        strokeOpacity={0.4}
+                      />
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CollapsibleChartCard>
+          ) : (
+            <p className="muted">No pressure-index readings in this range.</p>
+          )}
         </>
       )}
     </div>
@@ -390,5 +477,10 @@ async function loadBp(start: number, end: number) {
 
 async function loadHeartRate(start: number, end: number) {
   const rows = await db.timeseries.where('metricType').equals('heart_rate').toArray()
+  return rows.filter((r) => r.timestamp >= start && r.timestamp <= end)
+}
+
+async function loadPressure(start: number, end: number) {
+  const rows = await db.timeseries.where('metricType').equals('pressure').toArray()
   return rows.filter((r) => r.timestamp >= start && r.timestamp <= end)
 }
