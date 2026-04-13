@@ -33,9 +33,11 @@
   --chart-sleep-light: #0ea5e9;
   --chart-sleep-awake: #ea580c;
 
-  /* BP reference bands: match diastolic (blue) / systolic (purple) line colors */
-  --bp-ref-dia-zone: color-mix(in srgb, var(--chart-dia) 36%, transparent);
-  --bp-ref-sys-zone: color-mix(in srgb, var(--chart-sys) 42%, transparent);
+  /* BP threshold lines: Stage 2 match series colors; severe = darker for contrast */
+  --bp-ref-dia-stage2: var(--chart-dia);
+  --bp-ref-sys-stage2: var(--chart-sys);
+  --bp-ref-dia-severe: #1e40af;
+  --bp-ref-sys-severe: #5b21b6;
 
   --sans: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -77,9 +79,10 @@
   --chart-sleep-deep: #a78bfa;
   --chart-sleep-light: #38bdf8;
   --chart-sleep-awake: #fb923c;
-  /* Stronger mix on dark surfaces so bands stay readable */
-  --bp-ref-dia-zone: color-mix(in srgb, var(--chart-dia) 46%, transparent);
-  --bp-ref-sys-zone: color-mix(in srgb, var(--chart-sys) 52%, transparent);
+  --bp-ref-dia-stage2: #60a5fa;
+  --bp-ref-sys-stage2: #a78bfa;
+  --bp-ref-dia-severe: #93c5fd;
+  --bp-ref-sys-severe: #c4b5fd;
 }
 
 :root[data-theme='dark'] #social .button-icon {

@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { BpStage2ReferenceBands } from '@/charts/bloodPressureReference'
+import { BpThresholdReferenceLines } from '@/charts/bloodPressureReference'
 import { CHART_AXIS_TICK, CHART_Y_AXIS_WIDTH } from '@/charts/chartAxis'
 import { formatTimeAxisTick } from '@/charts/formatTimeAxisTick'
 import { LINE_CHART_MARGIN_WITH_BRUSH } from '@/charts/lineChartMargins'
@@ -80,14 +80,13 @@ export function BloodPressurePage({
       </p>
       <details className="page-details">
         <summary className="page-details-summary">
-          About the warning bands (Stage 2 hypertension)
+          About the threshold lines
         </summary>
         <p className="muted page-details-body">
-          Stage 2 hypertension is commonly systolic ≥140 mmHg or diastolic ≥90
-          mmHg. The blue band marks the 90–140 mmHg range on the shared axis
-          (diastolic threshold, same hue as the diastolic line); the purple band
-          marks ≥140 mmHg (systolic threshold, same hue as the systolic line).
-          Reference only—not a diagnosis.
+          Dotted lines mark common reference levels on the shared mmHg axis.
+          Stage 2: blue at 90 (diastolic), purple at 140 (systolic). Severe:
+          darker blue at 120 (diastolic), darker purple at 180 (systolic). Not
+          medical advice—use your clinician’s targets.
         </p>
       </details>
       {rows.length === 0 ? (
@@ -104,7 +103,7 @@ export function BloodPressurePage({
                 margin={bpChartMargin}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <BpStage2ReferenceBands />
+                <BpThresholdReferenceLines />
                 <XAxis
                   type="number"
                   dataKey="t"
@@ -160,7 +159,7 @@ export function BloodPressurePage({
                 margin={{ top: 14, right: 18, bottom: 58, left: CHART_Y_AXIS_WIDTH + 12 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <BpStage2ReferenceBands />
+                <BpThresholdReferenceLines />
                 <XAxis
                   dataKey="label"
                   tick={{ ...CHART_AXIS_TICK }}
