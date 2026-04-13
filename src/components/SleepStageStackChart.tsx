@@ -40,6 +40,7 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
   const data = zoom.zoomedData
   const labelCount = data.length
   const bottom = labelCount > 8 ? 88 : labelCount > 4 ? 64 : 48
+  const tickCount = Math.min(12, Math.max(5, labelCount))
 
   return (
     <CollapsibleChartCard title="Sleep stage time (per session)">
@@ -70,6 +71,8 @@ export function SleepStageStackChart({ sessions, chartResetKey }: Props) {
               type="number"
               dataKey="t"
               domain={['dataMin', 'dataMax']}
+              tickCount={tickCount}
+              minTickGap={8}
               tick={{
                 ...CHART_AXIS_TICK,
                 fontSize: labelCount > 5 ? 10 : 11,

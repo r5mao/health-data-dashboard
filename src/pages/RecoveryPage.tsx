@@ -93,9 +93,9 @@ export function RecoveryPage({
                     <th>Start</th>
                     <th>End</th>
                     <th>Total (min)</th>
-                    <th>Deep</th>
-                    <th>Light</th>
                     <th>Awake</th>
+                    <th>Light</th>
+                    <th>Deep</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -104,9 +104,9 @@ export function RecoveryPage({
                       <td>{formatDateTime12(s.startTime)}</td>
                       <td>{formatDateTime12(s.endTime)}</td>
                       <td>{s.sleepMinutes}</td>
-                      <td>{s.deepMinutes}</td>
-                      <td>{s.lightMinutes}</td>
                       <td>{s.awakeMinutes}</td>
+                      <td>{s.lightMinutes}</td>
+                      <td>{s.deepMinutes}</td>
                     </tr>
                   ))}
                 </tbody>
