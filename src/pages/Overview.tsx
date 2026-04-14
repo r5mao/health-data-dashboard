@@ -1,4 +1,4 @@
-import { format, startOfDay } from 'date-fns'
+import { format, startOfDay, subDays } from 'date-fns'
 import { formatDateTime12 } from '@/time/formatDateTime12'
 import { useEffect, useState, type ReactNode } from 'react'
 import { db } from '@/db/schema'
@@ -60,9 +60,9 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         latestTimeseriesMetric('breathing'),
         latestDailyStepsSummary(),
         latestWeight(),
-        loadMetricTrend('heart_rate', 14),
+        loadMetricTrendForPastDays('heart_rate', 2),
         loadMetricTrend('oxygen', 14),
-        loadMetricTrend('breathing', 14),
+        loadMetricTrendForPastDays('breathing', 2),
         loadRecentDailyStepMaxima(7),
       ])
       setBp(lbp)
@@ -446,6 +446,18 @@ function polarFromGaugeAngle(
 async function loadMetricTrend(metricType: MetricType, limit: number): Promise<number[]> {
   const rows = await db.timeseries.where('metricType').equals(metricType).sortBy('timestamp')
   return rows.slice(-limit).map((r) => r.value)
+}
+
+async function loadMetricTrendForPastDays(
+  metricType: MetricType,
+  days: number,
+): Promise<number[]> {
+  const rows = await db.timeseries.where('metricType').equals(metricType).sortBy('timestamp')
+  if (rows.length === 0) return []
+
+  const maxTs = rows[rows.length - 1].timestamp
+  const windowStart = subDays(new Date(maxTs), days).getTime()
+  return rows.filter((r) => r.timestamp >= windowStart).map((r) => r.value)
 }
 
 async function loadRecentDailyStepMaxima(days: number): Promise<number[]> {
