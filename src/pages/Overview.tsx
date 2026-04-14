@@ -1,4 +1,4 @@
-import { format, startOfDay, subDays } from 'date-fns'
+import { format, startOfDay, subHours } from 'date-fns'
 import { formatDateTime12 } from '@/time/formatDateTime12'
 import { useEffect, useState, type ReactNode } from 'react'
 import { db } from '@/db/schema'
@@ -60,9 +60,9 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
         latestTimeseriesMetric('breathing'),
         latestDailyStepsSummary(),
         latestWeight(),
-        loadMetricTrendForPastDays('heart_rate', 2),
+        loadMetricTrendLastHoursBeforeLatest('heart_rate', 24),
         loadMetricTrend('oxygen', 14),
-        loadMetricTrendForPastDays('breathing', 2),
+        loadMetricTrendLastHoursBeforeLatest('breathing', 24),
         loadRecentDailyStepMaxima(7),
       ])
       setBp(lbp)
@@ -84,7 +84,9 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
       <h2>Overview</h2>
       <p className="muted">
         KPIs use the latest stored readings. Blood pressure average is rolling 7
-        days (fixed window), not the selected chart range.
+        days (fixed window), not the selected chart range. Heart rate and breathing
+        sparklines show samples in the 24 hours ending at the latest point for each
+        metric.
       </p>
       <div className="kpi-grid">
         <Kpi
@@ -174,7 +176,15 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
           title="Latest heart rate"
           value={hr ? `${Math.round(hr.value)} bpm` : '—'}
           sub={hr ? formatDateTime12(hr.timestamp, { withSeconds: false }) : undefined}
-          visual={<MiniSparkline values={hrTrend} color="var(--chart-sys)" />}
+          visual={
+            <MiniSparkline
+              values={hrTrend}
+              color="var(--chart-sys)"
+              domainMin={40}
+              domainMax={200}
+              ariaLabel="Heart rate trend, last 24 hours before latest reading"
+            />
+          }
         />
         <Kpi
           title="Latest SpO₂"
@@ -203,7 +213,15 @@ export function Overview({ dataRevision }: { dataRevision: number }) {
           title="Latest breathing rate"
           value={breath ? `${breath.value.toFixed(1)} / min` : '—'}
           sub={breath ? formatDateTime12(breath.timestamp, { withSeconds: false }) : undefined}
-          visual={<MiniSparkline values={breathTrend} color="var(--chart-br)" />}
+          visual={
+            <MiniSparkline
+              values={breathTrend}
+              color="var(--chart-br)"
+              domainMin={6}
+              domainMax={40}
+              ariaLabel="Breathing rate trend, last 24 hours before latest reading"
+            />
+          }
         />
         <Kpi
           title="Latest daily steps (max that day)"
@@ -248,17 +266,33 @@ function Kpi({
   )
 }
 
-function MiniSparkline({ values, color }: { values: number[]; color: string }) {
+function MiniSparkline({
+  values,
+  color,
+  domainMin,
+  domainMax,
+  ariaLabel = 'Recent trend',
+}: {
+  values: number[]
+  color: string
+  /** When set with domainMax, Y scale uses this range (values clamped). */
+  domainMin?: number
+  domainMax?: number
+  ariaLabel?: string
+}) {
   if (values.length < 2) return <div className="kpi-visual-empty" />
-  const min = Math.min(...values)
-  const max = Math.max(...values)
+  const dataMin = Math.min(...values)
+  const dataMax = Math.max(...values)
+  const min = domainMin !== undefined && domainMax !== undefined ? domainMin : dataMin
+  const max = domainMin !== undefined && domainMax !== undefined ? domainMax : dataMax
   const pad = 4
   const width = 116
   const height = 40
   const range = max - min || 1
   const points = values.map((v, i) => {
     const x = pad + (i / (values.length - 1)) * (width - pad * 2)
-    const y = height - pad - ((v - min) / range) * (height - pad * 2)
+    const clamped = Math.min(Math.max(v, min), max)
+    const y = height - pad - ((clamped - min) / range) * (height - pad * 2)
     return { x, y }
   })
   const linePath = points
@@ -274,7 +308,7 @@ function MiniSparkline({ values, color }: { values: number[]; color: string }) {
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       role="img"
-      aria-label="Recent trend"
+      aria-label={ariaLabel}
     >
       <path d={areaPath} fill={color} opacity={0.18} />
       <path d={linePath} fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" />
@@ -448,15 +482,16 @@ async function loadMetricTrend(metricType: MetricType, limit: number): Promise<n
   return rows.slice(-limit).map((r) => r.value)
 }
 
-async function loadMetricTrendForPastDays(
+/** Samples in [latestTimestamp − hours, latestTimestamp] for this metric only. */
+async function loadMetricTrendLastHoursBeforeLatest(
   metricType: MetricType,
-  days: number,
+  hours: number,
 ): Promise<number[]> {
   const rows = await db.timeseries.where('metricType').equals(metricType).sortBy('timestamp')
   if (rows.length === 0) return []
 
   const maxTs = rows[rows.length - 1].timestamp
-  const windowStart = subDays(new Date(maxTs), days).getTime()
+  const windowStart = subHours(new Date(maxTs), hours).getTime()
   return rows.filter((r) => r.timestamp >= windowStart).map((r) => r.value)
 }
 

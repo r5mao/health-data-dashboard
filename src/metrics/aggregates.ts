@@ -10,9 +10,9 @@ import type { MetricType } from '@/types/metric'
 export async function latestTimeseriesMetric(
   metric: MetricType,
 ): Promise<TimeseriesRow | null> {
-  const rows = await db.timeseries.where('metricType').equals(metric).toArray()
+  const rows = await db.timeseries.where('metricType').equals(metric).sortBy('timestamp')
   if (rows.length === 0) return null
-  return rows.reduce((a, b) => (a.timestamp >= b.timestamp ? a : b))
+  return rows[rows.length - 1]!
 }
 
 /** Max steps sample per local calendar day, then take the day with latest date. */
