@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { importCsvFile } from '@/import/runImport'
+import { importCsvFile, importZipFile } from '@/import/runImport'
 import { clearAllData } from '@/db/repository'
 
 type Props = {
@@ -24,13 +24,17 @@ export function ImportPanel({ onImported }: Props) {
     let touchedData = false
 
     for (const file of Array.from(files)) {
+      const lower = file.name.toLowerCase()
+      const isZip = lower.endsWith('.zip')
       try {
-        const result = await importCsvFile(file)
-        if (result.ok) {
-          importedCount += 1
-          touchedData = true
-        } else {
-          failedCount += 1
+        const results = isZip ? await importZipFile(file) : [await importCsvFile(file)]
+        for (const result of results) {
+          if (result.ok) {
+            importedCount += 1
+            touchedData = true
+          } else {
+            failedCount += 1
+          }
         }
       } catch {
         failedCount += 1
@@ -64,9 +68,10 @@ export function ImportPanel({ onImported }: Props) {
   async function onDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
     setIsDragActive(false)
-    const files = Array.from(e.dataTransfer.files).filter((f) =>
-      f.name.toLowerCase().endsWith('.csv'),
-    )
+    const files = Array.from(e.dataTransfer.files).filter((f) => {
+      const n = f.name.toLowerCase()
+      return n.endsWith('.csv') || n.endsWith('.zip')
+    })
     await importFiles(files)
   }
 
@@ -122,16 +127,16 @@ export function ImportPanel({ onImported }: Props) {
             inputRef.current?.click()
           }
         }}
-        aria-label="Drop CSV files here or press Enter to browse files"
+        aria-label="Drop CSV or ZIP files here or press Enter to browse files"
       >
-        <p className="import-dropzone-title">Drag and drop CSV files here</p>
+        <p className="import-dropzone-title">Drag and drop CSV or ZIP files here</p>
         <p className="muted import-dropzone-subtitle">or click to browse</p>
       </div>
       <div className="import-panel">
         <input
           ref={inputRef}
           type="file"
-          accept=".csv"
+          accept=".csv,.zip,application/zip"
           multiple
           className="file-input"
           onChange={onChange}
@@ -141,7 +146,7 @@ export function ImportPanel({ onImported }: Props) {
           className="btn secondary"
           onClick={() => inputRef.current?.click()}
         >
-          Import CSV
+          Import CSV / ZIP
         </button>
         <button
           type="button"

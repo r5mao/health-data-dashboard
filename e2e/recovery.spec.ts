@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test'
-import { importFixtures, navigateToTab } from './helpers'
+import { applyAllDatePreset, importFixtures, navigateToTab } from './helpers'
 
 test.describe('Recovery page with data', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
     await importFixtures(page, 'BloodOxygen_Data.csv', 'Breathing_Data.csv', 'Sleep_Data.csv')
     await navigateToTab(page, 'Recovery')
+    await applyAllDatePreset(page)
   })
 
   test('does not show empty state', async ({ page }) => {

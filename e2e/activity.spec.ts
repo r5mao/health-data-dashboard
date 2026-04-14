@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test'
-import { importFixtures, navigateToTab } from './helpers'
+import { applyAllDatePreset, importFixtures, navigateToTab } from './helpers'
 
 test.describe('Activity page with data', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
     await importFixtures(page, 'Step_Data.csv', 'Heat_Data.csv', 'Sport_Data.csv')
     await navigateToTab(page, 'Activity')
+    await applyAllDatePreset(page)
   })
 
   test('does not show empty state', async ({ page }) => {

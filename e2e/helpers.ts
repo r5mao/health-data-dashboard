@@ -23,6 +23,11 @@ export async function navigateToTab(page: Page, label: string) {
   await page.getByRole('button', { name: label, exact: true }).click()
 }
 
+/** Chart tabs default to a 30-day window; fixture data spans Mar–Apr so "All" includes every row. */
+export async function applyAllDatePreset(page: Page) {
+  await page.locator('.preset-btn', { hasText: 'All' }).click()
+}
+
 export async function importFixtures(page: Page, ...filenames: string[]) {
   await navigateToTab(page, 'Import')
   const fileInput = page.locator('input[type="file"]')

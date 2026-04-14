@@ -6,6 +6,11 @@ test.describe('Overview KPIs after import', () => {
     await page.goto('/')
     await importFixtures(page, ...ALL_FIXTURES)
     await navigateToTab(page, 'Overview')
+    await expect
+      .poll(async () => (await getKpiValue(page, 'Latest blood pressure')).includes('mmHg'), {
+        timeout: 20_000,
+      })
+      .toBe(true)
   })
 
   test('latest blood pressure shows mmHg', async ({ page }) => {
