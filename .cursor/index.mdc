@@ -1,0 +1,51 @@
+# Health Data Dashboard
+
+This repository is a personal **health data dashboard**: a React 19 + TypeScript + Vite single-page app for visualizing health metrics (blood pressure, sleep, activity, recovery, records, etc.). Data is imported from CSV (and related bundles), stored locally in the browser via Dexie/IndexedDB, and rendered with Recharts. The codebase is organized by feature area under `src/` with shared chart primitives, a Dexie-backed data layer, import pipelines, metric transforms, and date-range context for filtering views.
+
+## npm scripts
+
+- **`dev`** — Start Vite dev server (`vite`).
+- **`build`** — Typecheck then production bundle (`tsc -b && vite build`).
+- **`lint`** — Run ESLint across the project (`eslint .`).
+- **`preview`** — Serve the production build locally (`vite preview`).
+- **`test`** — Run Vitest unit tests once (`vitest run`).
+- **`test:watch`** — Run Vitest in watch mode (`vitest`).
+- **`test:e2e`** — Run Playwright end-to-end tests (`playwright test`).
+- **`test:e2e:ui`** — Playwright tests with UI mode (`playwright test --ui`).
+- **`test:all`** — Unit tests then e2e (`npm run test && npm run test:e2e`).
+
+## `src/` folder structure
+
+- **`charts/`** — Chart helpers: axes, margins, legends, brush, blood-pressure reference overlays, and hooks for drag/zoom and brush time span.
+- **`components/`** — Reusable UI: charts, controls, import panel, theme, tabs, and layout pieces shared across pages.
+- **`db/`** — Dexie schema and repository/API for reading and writing persisted health records and related data.
+- **`import/`** — CSV parsing (PapaParse), ZIP handling, import orchestration, and source-specific adapters (e.g. bundled importers under `sources/`).
+- **`metrics/`** — Metric math: bucketing, aggregates, and chart-ready series builders (e.g. sleep/activity transforms).
+- **`pages/`** — Top-level route screens (overview, blood pressure, sleep, activity, recovery, records, etc.).
+- **`theme/`** — Theme preference, persistence hooks, and theme UI controls.
+- **`time/`** — Date-range context, hooks, and formatting utilities for filters and axis labels.
+- **`types/`** — Shared TypeScript types for metrics, canonical records, and cross-cutting models.
+- **`test/`** — Vitest setup (`setup.ts`) and shared test utilities; unit tests themselves live next to the code they cover.
+
+## Key libraries
+
+- **Dexie** — IndexedDB wrapper; all app persistence goes through the `src/db/` layer.
+- **Recharts** — Composable charts for time series and related visualizations.
+- **PapaParse** — Robust CSV parsing for imports and fixtures.
+- **date-fns** — Date manipulation and formatting consistent with the rest of the stack.
+- **fflate** — Fast ZIP inflate/deflate for reading CSVs inside zip bundles during import.
+
+## Coding conventions
+
+- **TypeScript strict mode**: enable and honor `strict` compiler options; keep explicit types, avoid careless `any`, and respect `verbatimModuleSyntax` and unused-symbol rules in `tsconfig.app.json`.
+- **React**: functional components only (no class components); keep components focused and extract hooks where logic repeats.
+- **Tests**: co-locate unit tests as `*.test.ts` next to the module they exercise; use `src/test/` for Vitest setup and shared helpers. E2e tests live under the Playwright project (e.g. `e2e/` or configured test dir).
+- **Persistence**: use **Dexie** (via `src/db/`) for all health records and imported metrics; do **not** use `localStorage` or `sessionStorage` for that data. (Small UI-only preferences such as theme may use `localStorage` where already established—prefer Dexie for anything new that resembles durable app data.)
+
+## Do not
+
+- Do **not** add or upgrade npm dependencies without asking the project owner; prefer existing stack choices.
+- Do **not** bypass TypeScript with `@ts-ignore`, `as any`, or untyped escape hatches except where unavoidable and called out.
+- Do **not** persist health or import-derived data with `localStorage` / `sessionStorage`; use Dexie. Do **not** add new `localStorage` usage for data that belongs in the database layer.
+- Do **not** introduce class-based React components or patterns that fight the existing functional style.
+- Do **not** skip or weaken lint/type checks to “make the build pass” without fixing the underlying issue.
